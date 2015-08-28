@@ -1,6 +1,8 @@
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import NoReverseMatch
 
+__all__ = ['generate_menu']
+
 
 class Menu(object):
     """
