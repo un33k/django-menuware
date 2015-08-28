@@ -32,10 +32,10 @@ class Menu(object):
         Given a menu item dictionary, and a key, it returns True if key is set to True
         else returns False
         """
-        true = item_dict.get(key, False)
-        return true
+        yep = item_dict.get(key, False)
+        return yep
 
-    def show_at_all_times(self, item_dict):
+    def show_to_all(self, item_dict):
         """
         Given a menu item dictionary, it returns true if menu item should be shown
         for both authenticated and unauthenticated users. (e.g. a `contact` menu item)
@@ -49,7 +49,7 @@ class Menu(object):
         Given a menu item dictionary, it returns true if menu item should be only shown
         to authenticated users. (e.g. a `logout` menu item)
         """
-        show = self.is_true('post_login_visible') and self.is_authenticated
+        show = self.is_true(item_dict, 'post_login_visible') and self.is_authenticated
         return show
 
     def show_to_unauthenticated(self, item_dict):
@@ -57,24 +57,28 @@ class Menu(object):
         Given a menu item dictionary, it returns true if menu item should be only shown
         to unauthenticated users. (e.g. a `login` menu item)
         """
-        show = self.is_true('pre_login_visible') and not self.is_authenticated
+        show = self.is_true(item_dict, 'pre_login_visible') and not self.is_authenticated
         return show
 
-    def show_to_superuser(self, item_dict):
+    def is_superuser_safe(self, item_dict):
         """
         Given a menu item dictionary, it returns true if menu item should be only shown
         to super users. (e.g. a `admin` menu item)
         """
-        show = self.is_true('superuser_required') and self.is_superuser
-        return show
+        yep = True
+        if self.is_true(item_dict, 'superuser_required') and not self.is_superuser:
+            yep = False
+        return yep
 
-    def show_to_staff(self, item_dict):
+    def is_staff_safe(self, item_dict):
         """
         Given a menu item dictionary, it returns true if menu item should be only shown
         to staff users. (e.g. a `limited admin` menu item)
         """
-        show = self.is_true('staff_required') and self.is_staff
-        return show
+        yep = True
+        if self.is_true(item_dict, 'staff_required') and self.is_staff:
+            yep = False
+        return yep
 
     def get_url(self, item_dict):
         """
@@ -116,7 +120,7 @@ class Menu(object):
         for item in list_dict:
             if not self.has_url(item):
                 continue
-            if self.show_at_all_times(item):
+            if self.show_to_all(item):
                 pass
             elif self.show_to_authenticated(item):
                 pass
@@ -124,9 +128,9 @@ class Menu(object):
                 pass
             else:
                 continue
-            if not self.show_to_superuser(item):
+            if not self.is_superuser_safe(item):
                 continue
-            if not self.show_to_staff(item):
+            if not self.is_staff_safe(item):
                 continue
             yield item
 
