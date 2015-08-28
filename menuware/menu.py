@@ -1,4 +1,5 @@
 from django.core.urlresolvers import reverse
+from django.core.urlresolvers import NoReverseMatch
 
 
 class Menu(object):
@@ -6,6 +7,7 @@ class Menu(object):
     Class that generates menu list.
     """
     def __init__(self):
+        self.current_path = ''
         self.is_staff = False
         self.is_superuser = False
         self.is_authenticated = False
@@ -18,6 +20,7 @@ class Menu(object):
         """
         Given a request object, store the current user attributes
         """
+        self.current_path = request.path
         self.is_staff = request.user.is_staff
         self.is_superuser = request.user.is_superuser
         self.is_authenticated = request.user.is_authenticated()
@@ -30,15 +33,16 @@ class Menu(object):
         true = item_dict.get(key, False)
         return true
 
-    def show_at_all_times(item_dict):
+    def show_at_all_times(self, item_dict):
         """
         Given a menu item dictionary, it returns true if menu item should be shown
         for both authenticated and unauthenticated users. (e.g. a `contact` menu item)
         """
-        show = self.is_true(item, 'pre_login_visible') and self.is_true(item, 'post_login_visible')
+        show = self.is_true(item_dict, 'pre_login_visible') and \
+            self.is_true(item_dict, 'post_login_visible')
         return show
 
-    def show_to_authenticated(item_dict):
+    def show_to_authenticated(self, item_dict):
         """
         Given a menu item dictionary, it returns true if menu item should be only shown
         to authenticated users. (e.g. a `logout` menu item)
@@ -46,7 +50,7 @@ class Menu(object):
         show = self.is_true('post_login_visible') and self.is_authenticated
         return show
 
-    def show_to_unauthenticated(item_dict):
+    def show_to_unauthenticated(self, item_dict):
         """
         Given a menu item dictionary, it returns true if menu item should be only shown
         to unauthenticated users. (e.g. a `login` menu item)
@@ -54,7 +58,7 @@ class Menu(object):
         show = self.is_true('pre_login_visible') and not self.is_authenticated
         return show
 
-    def show_to_superuser(item_dict):
+    def show_to_superuser(self, item_dict):
         """
         Given a menu item dictionary, it returns true if menu item should be only shown
         to super users. (e.g. a `admin` menu item)
@@ -62,7 +66,7 @@ class Menu(object):
         show = self.is_true('superuser_required') and self.is_superuser
         return show
 
-    def show_to_staff(item_dict):
+    def show_to_staff(self, item_dict):
         """
         Given a menu item dictionary, it returns true if menu item should be only shown
         to staff users. (e.g. a `limited admin` menu item)
@@ -75,7 +79,7 @@ class Menu(object):
         Given a menu item dictionary, it returns the URL or an empty string.
         """
         final_url = ''
-        url = item.get('url', '')
+        url = item_dict.get('url', '')
         try:
             final_url = reverse(url)
         except NoReverseMatch:
@@ -87,7 +91,7 @@ class Menu(object):
         Given a menu item dictionary, it returns true if a URL is set.
         """
         if not self.get_url(item_dict):
-            returns False
+            return False
         return True
 
     def set_breadcrums(self, menu_list, best_match_url):
@@ -107,7 +111,7 @@ class Menu(object):
         """
         A generator that returns only the visible menu items.
         """
-        for item in sorted_dict_list:
+        for item in list_dict:
             if not self.has_url(item):
                 continue
             if self.show_at_all_times(item):
@@ -130,11 +134,11 @@ class Menu(object):
         """
         best_match_url = ''
         visible_menu = []
-        for item in get_menu_list(list_dict):
+        for item in self.get_menu_list(list_dict):
             url = self.get_url(item)
 
             # record the based matched url on the requested path
-            if len(url) > 1 and url in request.path:
+            if len(url) > 1 and url in self.current_path:
                 if len(best_match_url) < len(url):
                     best_match_url = url
 
