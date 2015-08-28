@@ -11,7 +11,7 @@ class Menu(object):
         self.is_authenticated = False
 
     def __call__(self, request, list_dict):
-        self.save_user_state(request):
+        self.save_user_state(request)
         return self.generate_menu(list_dict)
 
     def save_user_state(self, request):
@@ -35,8 +35,7 @@ class Menu(object):
         Given a menu item dictionary, it returns true if menu item should be shown
         for both authenticated and unauthenticated users. (e.g. a `contact` menu item)
         """
-        show =  self.is_true(item, 'pre_login_visible') and \
-                self.is_true(item, 'post_login_visible')
+        show = self.is_true(item, 'pre_login_visible') and self.is_true(item, 'post_login_visible')
         return show
 
     def show_to_authenticated(item_dict):
@@ -44,7 +43,7 @@ class Menu(object):
         Given a menu item dictionary, it returns true if menu item should be only shown
         to authenticated users. (e.g. a `logout` menu item)
         """
-        show =  self.is_true('post_login_visible') and self.is_authenticated
+        show = self.is_true('post_login_visible') and self.is_authenticated
         return show
 
     def show_to_unauthenticated(item_dict):
@@ -52,7 +51,7 @@ class Menu(object):
         Given a menu item dictionary, it returns true if menu item should be only shown
         to unauthenticated users. (e.g. a `login` menu item)
         """
-        show =  self.is_true('pre_login_visible') and not self.is_authenticated
+        show = self.is_true('pre_login_visible') and not self.is_authenticated
         return show
 
     def show_to_superuser(item_dict):
@@ -60,7 +59,7 @@ class Menu(object):
         Given a menu item dictionary, it returns true if menu item should be only shown
         to super users. (e.g. a `admin` menu item)
         """
-        show =  self.is_true('superuser_required') and self.is_superuser
+        show = self.is_true('superuser_required') and self.is_superuser
         return show
 
     def show_to_staff(item_dict):
@@ -68,7 +67,7 @@ class Menu(object):
         Given a menu item dictionary, it returns true if menu item should be only shown
         to staff users. (e.g. a `limited admin` menu item)
         """
-        show =  self.is_true('staff_required') and self.is_staff
+        show = self.is_true('staff_required') and self.is_staff
         return show
 
     def get_url(self, item_dict):
@@ -104,7 +103,6 @@ class Menu(object):
         if matched_index > -1:
             menu_list[matched_index]['selected'] = True
 
-
     def get_menu_list(self, list_dict):
         """
         A generator that returns only the visible menu items.
@@ -118,7 +116,7 @@ class Menu(object):
                 pass
             elif self.show_to_unauthenticated(item):
                 pass
-            else
+            else:
                 continue
             if not self.show_to_superuser(item):
                 continue
@@ -147,4 +145,3 @@ class Menu(object):
         return visible_menu
 
 generate_menu = Menu()
-
