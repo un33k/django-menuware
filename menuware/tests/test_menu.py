@@ -37,6 +37,10 @@ class MenuTestCase(TestCase):
                 "render_for_unauthenticated": True,
                 "render_for_authenticated": True,
             },
+            {   # Menu item -- invisible without at least one auth render option
+                "name": "Main",
+                "url": "/",
+            },
             {   # Menu item -- visible to anyone, anytime
                 "name": "Main",
                 "url": "/",
