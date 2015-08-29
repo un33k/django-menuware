@@ -1,7 +1,7 @@
 Django Menuware
 ====================
 
-**A simple yet effective menu generator for any Django project **
+**A simple yet effective menu generator for any Django project**
 
 [![status-image]][status-link]
 [![version-image]][version-link]

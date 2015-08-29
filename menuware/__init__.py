@@ -1,3 +1,5 @@
-__version__ = '0.0.2'
+__author__ = 'Val Neekman @ Neekware Inc.'
+__description__ = 'A navigation menu system application for Django projects/apps.'
+__version__ = '0.0.3'
 
 default_app_config = 'menuware.apps.AppConfig'

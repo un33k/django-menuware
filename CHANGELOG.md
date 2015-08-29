@@ -1,3 +1,11 @@
+## 0.0.3
+
+Features:
+
+  - Added More Test Cases
+  - Clean up
+
+
 ## 0.0.2
 
 Features:
