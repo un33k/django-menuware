@@ -133,3 +133,74 @@ class MenuTestCase(TestCase):
         self.assertTrue(self.menu.get_url({'url': '/'}))
         self.assertTrue(self.menu.get_url({'url': '/foo/bar'}))
         self.assertTrue(self.menu.get_url({'url': 'named_url'}))
+
+    def test_get_menu_list(self):
+        self.request.user = RegularUser()
+        self.menu.save_user_state(self.request)
+        list_dict = [
+            {
+                "name": "Main Page",
+                "url": "/",
+                "pre_login_visible": True,
+                "post_login_visible": True,
+                "superuser_required": False,
+                "staff_required": False,
+                "selected": False
+            },
+            {
+                "name": "About Page",
+                "url": "/about/",
+                "pre_login_visible": True,
+                "post_login_visible": True,
+                "superuser_required": False,
+                "staff_required": False,
+                "selected": False
+            },
+            {
+                "name": "Account Page",
+                "url": "/account/",
+                "pre_login_visible": False,
+                "post_login_visible": True,
+                "superuser_required": False,
+                "staff_required": False,
+                "selected": False
+            },
+        ]
+        visible = 0
+        for item in self.menu.get_menu_list(list_dict):
+            visible += 1
+        self.assertEqual(visible, 2)
+
+        self.request.user = AuthenticatedUser()
+        self.menu.save_user_state(self.request)
+        visible = 0
+        for item in self.menu.get_menu_list(list_dict):
+            visible += 1
+        self.assertEqual(visible, 3)
+
+        list_dict.append({
+            "name": "Admin Page",
+            "url": "/admin/",
+            "pre_login_visible": False,
+            "post_login_visible": True,
+            "superuser_required": True,
+            "staff_required": False,
+            "selected": False
+        })
+        visible = 0
+        for item in self.menu.get_menu_list(list_dict):
+            visible += 1
+        self.assertEqual(visible, 3)
+
+        self.request.user = SuperUser()
+        self.menu.save_user_state(self.request)
+        visible = 0
+        for item in self.menu.get_menu_list(list_dict):
+            visible += 1
+        self.assertEqual(visible, 2)
+
+        self.menu.is_authenticated = True
+        visible = 0
+        for item in self.menu.get_menu_list(list_dict):
+            visible += 1
+        self.assertEqual(visible, 4)
