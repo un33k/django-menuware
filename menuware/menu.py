@@ -34,8 +34,8 @@ class MenuBase(object):
         Given a menu item dictionary, it returns true if menu item should be shown
         for both authenticated and unauthenticated users. (e.g. a `contact` menu item)
         """
-        show = self.is_true(item_dict, 'pre_login_visible') and \
-            self.is_true(item_dict, 'post_login_visible')
+        show = self.is_true(item_dict, 'render_for_unauthenticated') and \
+            self.is_true(item_dict, 'render_for_authenticated')
         return show
 
     def show_to_authenticated(self, item_dict):
@@ -43,7 +43,7 @@ class MenuBase(object):
         Given a menu item dictionary, it returns true if menu item should be only shown
         to authenticated users. (e.g. a `logout` menu item)
         """
-        show = self.is_true(item_dict, 'post_login_visible') and self.is_authenticated
+        show = self.is_true(item_dict, 'render_for_authenticated') and self.is_authenticated
         return show
 
     def show_to_unauthenticated(self, item_dict):
@@ -51,7 +51,7 @@ class MenuBase(object):
         Given a menu item dictionary, it returns true if menu item should be only shown
         to unauthenticated users. (e.g. a `login` menu item)
         """
-        show = self.is_true(item_dict, 'pre_login_visible') and not self.is_authenticated
+        show = self.is_true(item_dict, 'render_for_unauthenticated') and not self.is_authenticated
         return show
 
     def is_superuser_safe(self, item_dict):
@@ -60,7 +60,7 @@ class MenuBase(object):
         to super users. (e.g. a `admin` menu item)
         """
         yep = True
-        if self.is_true(item_dict, 'superuser_required') and not self.is_superuser:
+        if self.is_true(item_dict, 'render_for_superuser') and not self.is_superuser:
             yep = False
         return yep
 
@@ -70,7 +70,7 @@ class MenuBase(object):
         to staff users. (e.g. a `limited admin` menu item)
         """
         yep = True
-        if self.is_true(item_dict, 'staff_required') and not self.is_staff:
+        if self.is_true(item_dict, 'render_for_staff') and not self.is_staff:
             yep = False
         return yep
 

@@ -29,36 +29,36 @@ class MenuTestCase(TestCase):
         self.list_dict = [
             {   # Menu item -- invisible without a valid `url` attribute
                 "name": "No URL Malformed Entry",
-                "pre_login_visible": True,
-                "post_login_visible": True,
+                "render_for_unauthenticated": True,
+                "render_for_authenticated": True,
             },
             {   # Menu item -- visible to anyone, anytime
                 "name": "Main",
                 "url": "/",
-                "pre_login_visible": True,
-                "post_login_visible": True,
+                "render_for_unauthenticated": True,
+                "render_for_authenticated": True,
             },
             {   # Menu item -- visible to unauthenticated users only
                 "name": "Login",
                 "url": "admin:login",
-                "pre_login_visible": True,
+                "render_for_unauthenticated": True,
             },
             {   # Menu item -- visible to authenticated users only
                 "name": "Login",
                 "url": "/logout/",
-                "post_login_visible": True,
+                "render_for_authenticated": True,
             },
             {   # Menu item -- visible to authenticated staff only
                 "name": "Limited Staff Account Access",
                 "url": "/account/",
-                "post_login_visible": True,
-                "staff_required": True,
+                "render_for_authenticated": True,
+                "render_for_staff": True,
             },
             {   # Menu item -- visible to authenticated superusers only
                 "name": "Full Superuser Account Access",
                 "url": "/admin/",
-                "post_login_visible": True,
-                "superuser_required": True,
+                "render_for_authenticated": True,
+                "render_for_superuser": True,
             },
         ]
 
@@ -97,47 +97,47 @@ class MenuTestCase(TestCase):
 
     def test_show_to_all(self):
         self.assertFalse(self.menu.show_to_all({}))
-        self.assertFalse(self.menu.show_to_all({'pre_login_visible': False}))
-        self.assertFalse(self.menu.show_to_all({'post_login_visible': False}))
-        self.assertFalse(self.menu.show_to_all({'pre_login_visible': True}))
-        self.assertFalse(self.menu.show_to_all({'pre_login_visible': True, 'post_login_visible': False}))
-        self.assertTrue(self.menu.show_to_all({'pre_login_visible': True, 'post_login_visible': True}))
+        self.assertFalse(self.menu.show_to_all({'render_for_unauthenticated': False}))
+        self.assertFalse(self.menu.show_to_all({'render_for_authenticated': False}))
+        self.assertFalse(self.menu.show_to_all({'render_for_unauthenticated': True}))
+        self.assertFalse(self.menu.show_to_all({'render_for_unauthenticated': True, 'render_for_authenticated': False}))
+        self.assertTrue(self.menu.show_to_all({'render_for_unauthenticated': True, 'render_for_authenticated': True}))
 
     def test_show_to_authenticated_users(self):
         self.request.user = TestUser(authenticated=True)
         self.menu.save_user_state(self.request)
         self.assertFalse(self.menu.show_to_authenticated({}))
-        self.assertFalse(self.menu.show_to_authenticated({'post_login_visible': False}))
-        self.assertTrue(self.menu.show_to_authenticated({'post_login_visible': True}))
+        self.assertFalse(self.menu.show_to_authenticated({'render_for_authenticated': False}))
+        self.assertTrue(self.menu.show_to_authenticated({'render_for_authenticated': True}))
 
     def test_show_to_unauthenticated_users(self):
         self.request.user = TestUser()
         self.menu.save_user_state(self.request)
         self.assertFalse(self.menu.show_to_unauthenticated({}))
-        self.assertFalse(self.menu.show_to_unauthenticated({'pre_login_visible': False}))
-        self.assertTrue(self.menu.show_to_unauthenticated({'pre_login_visible': True}))
+        self.assertFalse(self.menu.show_to_unauthenticated({'render_for_unauthenticated': False}))
+        self.assertTrue(self.menu.show_to_unauthenticated({'render_for_unauthenticated': True}))
 
     def test_is_superuser_safe(self):
         self.request.user = TestUser()
         self.menu.save_user_state(self.request)
         self.assertTrue(self.menu.is_superuser_safe({}))
-        self.assertTrue(self.menu.is_superuser_safe({'superuser_required': False}))
-        self.assertFalse(self.menu.is_superuser_safe({'superuser_required': True}))
+        self.assertTrue(self.menu.is_superuser_safe({'render_for_superuser': False}))
+        self.assertFalse(self.menu.is_superuser_safe({'render_for_superuser': True}))
 
         self.request.user = TestUser(superuser=True)
         self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.is_superuser_safe({'superuser_required': True}))
+        self.assertTrue(self.menu.is_superuser_safe({'render_for_superuser': True}))
 
     def test_is_staff_safe(self):
         self.request.user = TestUser()
         self.menu.save_user_state(self.request)
         self.assertTrue(self.menu.is_staff_safe({}))
-        self.assertTrue(self.menu.is_staff_safe({'staff_required': False}))
-        self.assertFalse(self.menu.is_staff_safe({'staff_required': True}))
+        self.assertTrue(self.menu.is_staff_safe({'render_for_staff': False}))
+        self.assertFalse(self.menu.is_staff_safe({'render_for_staff': True}))
 
         self.request.user = TestUser(staff=True)
         self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.is_staff_safe({'staff_required': True}))
+        self.assertTrue(self.menu.is_staff_safe({'render_for_staff': True}))
 
     def test_get_url(self):
         self.assertEqual(self.menu.get_url({}), '')
