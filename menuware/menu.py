@@ -1,28 +1,22 @@
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import NoReverseMatch
 
-__all__ = ['generate_menu']
 
-
-class Menu(object):
+class MenuBase(object):
     """
-    Class that generates menu list.
+    Base class that generates menu list.
     """
     def __init__(self):
-        self.current_path = ''
+        self.path = ''
         self.is_staff = False
         self.is_superuser = False
         self.is_authenticated = False
-
-    def __call__(self, request, list_dict):
-        self.save_user_state(request)
-        return self.generate_menu(list_dict)
 
     def save_user_state(self, request):
         """
         Given a request object, store the current user attributes
         """
-        self.current_path = request.path
+        self.path = request.path
         self.is_staff = request.user.is_staff
         self.is_superuser = request.user.is_superuser
         self.is_authenticated = request.user.is_authenticated()
@@ -144,7 +138,7 @@ class Menu(object):
             url = self.get_url(item)
 
             # record the based matched url on the requested path
-            if len(url) > 1 and url in self.current_path:
+            if len(url) > 1 and url in self.path:
                 if len(best_match_url) < len(url):
                     best_match_url = url
 
@@ -153,5 +147,14 @@ class Menu(object):
 
         self.set_breadcrums(visible_menu, best_match_url)
         return visible_menu
+
+
+class Menu(MenuBase):
+    """
+    Class that generates menu list.
+    """
+    def __call__(self, request, list_dict):
+        self.save_user_state(request)
+        return self.generate_menu(list_dict)
 
 generate_menu = Menu()
