@@ -12,7 +12,7 @@ Django Menuware
 Overview
 ====================
 
-**Build simple navigation system for Django projects/apps, while keeping it **DRY**.
+Build **simple navigation system** for Django projects/apps, while keeping it **DRY**.
 
 How to install
 ====================
