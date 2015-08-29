@@ -1,6 +1,7 @@
 from django.http import HttpRequest
 from django.test import TestCase
 from ..menu import MenuBase
+from ..menu import generate_menu
 
 
 class RegularUser(object):
@@ -266,3 +267,59 @@ class MenuTestCase(TestCase):
         self.menu.is_authenticated = True
         menu = self.menu.generate_menu(list_dict)
         self.assertEqual(len(menu), 4)
+
+    def test_callable(self):
+        self.request.user = RegularUser()
+        self.menu.save_user_state(self.request)
+        list_dict = [
+            {
+                "name": "Main Page",
+                "url": "/",
+                "pre_login_visible": True,
+                "post_login_visible": True,
+                "superuser_required": False,
+                "staff_required": False,
+                "selected": False
+            },
+            {
+                "name": "About Page",
+                "url": "/about/",
+                "pre_login_visible": True,
+                "post_login_visible": True,
+                "superuser_required": False,
+                "staff_required": False,
+                "selected": False
+            },
+            {
+                "name": "Account Page",
+                "url": "/account/",
+                "pre_login_visible": False,
+                "post_login_visible": True,
+                "superuser_required": False,
+                "staff_required": False,
+                "selected": False
+            },
+        ]
+        menu = generate_menu(self.request, list_dict)
+        self.assertEqual(len(menu), 2)
+
+        self.request.user = AuthenticatedUser()
+        menu = generate_menu(self.request, list_dict)
+        self.assertEqual(len(menu), 3)
+
+        list_dict.append({
+            "name": "Admin Page",
+            "url": "/admin/",
+            "pre_login_visible": False,
+            "post_login_visible": True,
+            "superuser_required": True,
+            "staff_required": False,
+            "selected": False
+        })
+
+        menu = generate_menu(self.request, list_dict)
+        self.assertEqual(len(menu), 3)
+
+        self.request.user = SuperUser()
+        menu = generate_menu(self.request, list_dict)
+        self.assertEqual(len(menu), 2)
