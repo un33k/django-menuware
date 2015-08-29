@@ -204,3 +204,65 @@ class MenuTestCase(TestCase):
         for item in self.menu.get_menu_list(list_dict):
             visible += 1
         self.assertEqual(visible, 4)
+
+    def test_generate_menu(self):
+        self.request.user = RegularUser()
+        self.menu.save_user_state(self.request)
+        list_dict = [
+            {
+                "name": "Main Page",
+                "url": "/",
+                "pre_login_visible": True,
+                "post_login_visible": True,
+                "superuser_required": False,
+                "staff_required": False,
+                "selected": False
+            },
+            {
+                "name": "About Page",
+                "url": "/about/",
+                "pre_login_visible": True,
+                "post_login_visible": True,
+                "superuser_required": False,
+                "staff_required": False,
+                "selected": False
+            },
+            {
+                "name": "Account Page",
+                "url": "/account/",
+                "pre_login_visible": False,
+                "post_login_visible": True,
+                "superuser_required": False,
+                "staff_required": False,
+                "selected": False
+            },
+        ]
+        menu = self.menu.generate_menu(list_dict)
+        self.assertEqual(len(menu), 2)
+
+        self.request.user = AuthenticatedUser()
+        self.menu.save_user_state(self.request)
+        menu = self.menu.generate_menu(list_dict)
+        self.assertEqual(len(menu), 3)
+
+        list_dict.append({
+            "name": "Admin Page",
+            "url": "/admin/",
+            "pre_login_visible": False,
+            "post_login_visible": True,
+            "superuser_required": True,
+            "staff_required": False,
+            "selected": False
+        })
+
+        menu = self.menu.generate_menu(list_dict)
+        self.assertEqual(len(menu), 3)
+
+        self.request.user = SuperUser()
+        self.menu.save_user_state(self.request)
+        menu = self.menu.generate_menu(list_dict)
+        self.assertEqual(len(menu), 2)
+
+        self.menu.is_authenticated = True
+        menu = self.menu.generate_menu(list_dict)
+        self.assertEqual(len(menu), 4)
