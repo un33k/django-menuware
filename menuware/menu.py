@@ -124,7 +124,7 @@ class MenuBase(object):
                 continue
             if not self.is_superuser_safe(item):
                 continue
-            if not self.is_staff_safe(item):
+            if not self.is_staff_safe(item) and not self.is_superuser_safe(item):
                 continue
             yield item
 
