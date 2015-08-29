@@ -122,5 +122,14 @@ class MenuTestCase(TestCase):
         self.menu.save_user_state(self.request)
         self.assertTrue(self.menu.is_staff_safe({'staff_required': True}))
 
+    def test_get_url(self):
+        self.assertEqual(self.menu.get_url({}), '')
+        self.assertEqual(self.menu.get_url({'url': '/'}), '/')
+        self.assertEqual(self.menu.get_url({'url': '/foo/bar'}), '/foo/bar')
+        self.assertEqual(self.menu.get_url({'url': 'named_url'}), 'named_url')
 
-
+    def test_has_url(self):
+        self.assertFalse(self.menu.has_url({}))
+        self.assertTrue(self.menu.get_url({'url': '/'}))
+        self.assertTrue(self.menu.get_url({'url': '/foo/bar'}))
+        self.assertTrue(self.menu.get_url({'url': 'named_url'}))
