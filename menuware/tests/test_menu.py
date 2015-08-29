@@ -27,6 +27,11 @@ class MenuTestCase(TestCase):
         self.request.path = '/'
         self.menu = MenuBase()
         self.list_dict = [
+            {   # Menu item -- invisible without a valid `name` attribute
+                "url": "/",
+                "render_for_unauthenticated": True,
+                "render_for_authenticated": True,
+            },
             {   # Menu item -- invisible without a valid `url` attribute
                 "name": "No URL Malformed Entry",
                 "render_for_unauthenticated": True,
@@ -165,7 +170,7 @@ class MenuTestCase(TestCase):
         nav_count_for_authenticated_user = 0
         for item in self.menu.get_menu_list(self.list_dict):
             nav_count_for_authenticated_user += 1
-        self.assertEqual(nav_count_for_authenticated_user, 3)
+        self.assertEqual(nav_count_for_authenticated_user, 2)
 
     def test_get_menu_list_staff_user(self):
         self.request.user = TestUser(staff=True, authenticated=True)
@@ -181,7 +186,7 @@ class MenuTestCase(TestCase):
         nav_count_for_superuser = 0
         for item in self.menu.get_menu_list(self.list_dict):
             nav_count_for_superuser += 1
-        self.assertEqual(nav_count_for_superuser, 4)
+        self.assertEqual(nav_count_for_superuser, 3)
 
     def test_generate_menu_anonymous_user(self):
         self.request.user = TestUser()
@@ -193,7 +198,7 @@ class MenuTestCase(TestCase):
         self.request.user = TestUser(authenticated=True)
         self.menu.save_user_state(self.request)
         nav_count_for_authenticated_user = self.menu.generate_menu(self.list_dict)
-        self.assertEqual(len(nav_count_for_authenticated_user), 3)
+        self.assertEqual(len(nav_count_for_authenticated_user), 2)
 
     def test_generate_menu_staff_user(self):
         self.request.user = TestUser(staff=True, authenticated=True)
@@ -205,7 +210,7 @@ class MenuTestCase(TestCase):
         self.request.user = TestUser(superuser=True, authenticated=True)
         self.menu.save_user_state(self.request)
         nav_count_for_superuser = self.menu.generate_menu(self.list_dict)
-        self.assertEqual(len(nav_count_for_superuser), 4)
+        self.assertEqual(len(nav_count_for_superuser), 3)
 
     def test_generate_menu_anonymous_user_callable(self):
         self.request.user = TestUser()
@@ -215,7 +220,7 @@ class MenuTestCase(TestCase):
     def test_generate_menu_authenticated_user_callable(self):
         self.request.user = TestUser(authenticated=True)
         nav_count_for_authenticated_user = generate_menu(self.request, self.list_dict)
-        self.assertEqual(len(nav_count_for_authenticated_user), 3)
+        self.assertEqual(len(nav_count_for_authenticated_user), 2)
 
     def test_generate_menu_staff_user_callable(self):
         self.request.user = TestUser(staff=True, authenticated=True)
@@ -225,4 +230,4 @@ class MenuTestCase(TestCase):
     def test_generate_menu_superuser_callable(self):
         self.request.user = TestUser(superuser=True, authenticated=True)
         nav_count_for_superuser = generate_menu(self.request, self.list_dict)
-        self.assertEqual(len(nav_count_for_superuser), 4)
+        self.assertEqual(len(nav_count_for_superuser), 3)

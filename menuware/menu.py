@@ -86,9 +86,16 @@ class MenuBase(object):
             final_url = url
         return final_url
 
+    def has_name(self, item_dict):
+        """
+        Given a menu item dictionary, it returns true if attribute `name` is set.
+        """
+        yep = self.is_true(item_dict, 'name')
+        return yep
+
     def has_url(self, item_dict):
         """
-        Given a menu item dictionary, it returns true if a URL is set.
+        Given a menu item dictionary, it returns true if attribute `url` is set.
         """
         if not self.get_url(item_dict):
             return False
@@ -112,7 +119,7 @@ class MenuBase(object):
         A generator that returns only the visible menu items.
         """
         for item in list_dict:
-            if not self.has_url(item):
+            if not self.has_name(item) or not self.has_url(item):
                 continue
             if self.show_to_all(item):
                 pass
@@ -124,7 +131,7 @@ class MenuBase(object):
                 continue
             if not self.is_superuser_safe(item):
                 continue
-            if not self.is_staff_safe(item) and not self.is_superuser_safe(item):
+            if not self.is_staff_safe(item):
                 continue
             yield item
 
