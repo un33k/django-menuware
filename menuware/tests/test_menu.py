@@ -40,14 +40,14 @@ class MenuTestCase(TestCase):
         self.assertFalse(self.menu.is_superuser)
         self.assertFalse(self.menu.is_authenticated)
 
-    def test_staff_user(self):
+    def test_staff(self):
         self.request.user = StaffUser()
         self.menu.save_user_state(self.request)
         self.assertTrue(self.menu.is_staff)
         self.assertFalse(self.menu.is_superuser)
         self.assertFalse(self.menu.is_authenticated)
 
-    def test_super_user(self):
+    def test_superuser(self):
         self.request.user = SuperUser()
         self.menu.save_user_state(self.request)
         self.assertTrue(self.menu.is_staff)
@@ -99,3 +99,28 @@ class MenuTestCase(TestCase):
         self.assertFalse(self.menu.show_to_unauthenticated({}))
         self.assertFalse(self.menu.show_to_unauthenticated({'pre_login_visible': False}))
         self.assertFalse(self.menu.show_to_unauthenticated({'pre_login_visible': True}))
+
+    def test_is_superuser_safe(self):
+        self.request.user = RegularUser()
+        self.menu.save_user_state(self.request)
+        self.assertTrue(self.menu.is_superuser_safe({}))
+        self.assertTrue(self.menu.is_superuser_safe({'superuser_required': False}))
+        self.assertFalse(self.menu.is_superuser_safe({'superuser_required': True}))
+
+        self.request.user = SuperUser()
+        self.menu.save_user_state(self.request)
+        self.assertTrue(self.menu.is_superuser_safe({'superuser_required': True}))
+
+    def test_is_staff_safe(self):
+        self.request.user = RegularUser()
+        self.menu.save_user_state(self.request)
+        self.assertTrue(self.menu.is_staff_safe({}))
+        self.assertTrue(self.menu.is_staff_safe({'staff_required': False}))
+        self.assertFalse(self.menu.is_staff_safe({'staff_required': True}))
+
+        self.request.user = StaffUser()
+        self.menu.save_user_state(self.request)
+        self.assertTrue(self.menu.is_staff_safe({'staff_required': True}))
+
+
+

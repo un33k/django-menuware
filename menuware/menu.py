@@ -70,7 +70,7 @@ class MenuBase(object):
         to staff users. (e.g. a `limited admin` menu item)
         """
         yep = True
-        if self.is_true(item_dict, 'staff_required') and self.is_staff:
+        if self.is_true(item_dict, 'staff_required') and not self.is_staff:
             yep = False
         return yep
 
