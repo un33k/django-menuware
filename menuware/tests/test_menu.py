@@ -45,12 +45,12 @@ class MenuTestCase(TestCase):
             },
             {   # Menu item -- visible to authenticated users only
                 "name": "Login",
-                "url": "/logout/",
+                "url": "/user/logout/",
                 "render_for_authenticated": True,
             },
             {   # Menu item -- visible to authenticated staff only
                 "name": "Limited Staff Account Access",
-                "url": "/account/",
+                "url": "/user/account/",
                 "render_for_authenticated": True,
                 "render_for_staff": True,
             },
