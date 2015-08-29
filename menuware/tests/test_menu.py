@@ -60,3 +60,42 @@ class MenuTestCase(TestCase):
         self.assertFalse(self.menu.is_staff)
         self.assertFalse(self.menu.is_superuser)
         self.assertTrue(self.menu.is_authenticated)
+
+    def test_is_true(self):
+        self.assertTrue(self.menu.is_true({'foo': True}, 'foo'))
+        self.assertFalse(self.menu.is_true({'foo': False}, 'foo'))
+        self.assertFalse(self.menu.is_true({'foo': True}, 'bar'))
+
+    def test_show_to_all(self):
+        self.assertFalse(self.menu.show_to_all({}))
+        self.assertFalse(self.menu.show_to_all({'pre_login_visible': False}))
+        self.assertFalse(self.menu.show_to_all({'post_login_visible': False}))
+        self.assertFalse(self.menu.show_to_all({'pre_login_visible': True}))
+        self.assertFalse(self.menu.show_to_all({'pre_login_visible': True, 'post_login_visible': False}))
+        self.assertTrue(self.menu.show_to_all({'pre_login_visible': True, 'post_login_visible': True}))
+
+    def test_show_to_authenticated_users(self):
+        self.request.user = RegularUser()
+        self.menu.save_user_state(self.request)
+        self.assertFalse(self.menu.show_to_authenticated({}))
+        self.assertFalse(self.menu.show_to_authenticated({'post_login_visible': False}))
+        self.assertFalse(self.menu.show_to_authenticated({'post_login_visible': True}))
+
+        self.request.user = AuthenticatedUser()
+        self.menu.save_user_state(self.request)
+        self.assertFalse(self.menu.show_to_authenticated({}))
+        self.assertFalse(self.menu.show_to_authenticated({'post_login_visible': False}))
+        self.assertTrue(self.menu.show_to_authenticated({'post_login_visible': True}))
+
+    def test_show_to_unauthenticated_users(self):
+        self.request.user = RegularUser()
+        self.menu.save_user_state(self.request)
+        self.assertFalse(self.menu.show_to_unauthenticated({}))
+        self.assertFalse(self.menu.show_to_unauthenticated({'pre_login_visible': False}))
+        self.assertTrue(self.menu.show_to_unauthenticated({'pre_login_visible': True}))
+
+        self.request.user = AuthenticatedUser()
+        self.menu.save_user_state(self.request)
+        self.assertFalse(self.menu.show_to_unauthenticated({}))
+        self.assertFalse(self.menu.show_to_unauthenticated({'pre_login_visible': False}))
+        self.assertFalse(self.menu.show_to_unauthenticated({'pre_login_visible': True}))
