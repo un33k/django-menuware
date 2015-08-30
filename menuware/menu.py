@@ -85,7 +85,7 @@ class MenuBase(object):
         Given a menu item dictionary, it returns true if attribute `name` is set.
         """
         yep = True
-        if not item_dict.get('name'):
+        if not item_dict.get('name', False):
             yep = False
         return yep
 
