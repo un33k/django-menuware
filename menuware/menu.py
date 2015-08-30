@@ -128,14 +128,20 @@ class MenuBase(object):
         if matched_index > -1:
             menu_list[matched_index]['selected'] = True
 
-    def get_submenu_list(self, item_dict):
+    def get_submenu_list(self, parent_dict):
         """
         Given a menu item dictionary, it returns a submenu if one exist, or
         returns None
         """
-        submenu = item_dict.get('submenu', None)
+        submenu = parent_dict.get('submenu', None)
         if submenu is None:
             return submenu
+
+        for item in submenu:
+            item['render_for_staff'] = self.is_true(parent_dict, 'render_for_staff')
+            item['render_for_superuser'] = self.is_true(parent_dict, 'render_for_superuser')
+            item['render_for_authenticated'] = self.is_true(parent_dict, 'render_for_authenticated')
+            item['render_for_unauthenticated'] = self.is_true(parent_dict, 'render_for_unauthenticated')
 
         submenu = self.generate_menu(submenu)
         if not submenu:
@@ -172,10 +178,10 @@ class MenuBase(object):
 
         for item in self.get_menu_list(list_dict):
             item['url'], best_match_url = self.process_url(item, best_match_url)
+            item['submenu'] = self.get_submenu_list(item)
             visible_menu.append(item)
 
         self.process_breadcrums(visible_menu, best_match_url)
-        item['submenu'] = self.get_submenu_list(item)
 
         return visible_menu
 
