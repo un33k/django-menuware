@@ -32,6 +32,12 @@ class MenuTestCase(TestCase):
                 "render_for_unauthenticated": True,
                 "render_for_authenticated": True,
             },
+            {   # Menu item -- invisible with a black `name`
+                "name": "",
+                "url": "/",
+                "render_for_unauthenticated": True,
+                "render_for_authenticated": True,
+            },
             {   # Menu item -- invisible without a valid `url` attribute
                 "name": "No URL Malformed Entry",
                 "render_for_unauthenticated": True,
