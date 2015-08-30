@@ -84,10 +84,9 @@ class MenuBase(object):
         """
         Given a menu item dictionary, it returns true if attribute `name` is set.
         """
-        yep = self.is_true(item_dict, 'name')
-        if yep:
-            if not item_dict.get('name'):
-                yep = False
+        yep = True
+        if not item_dict.get('name'):
+            yep = False
         return yep
 
     def get_url(self, item_dict):
