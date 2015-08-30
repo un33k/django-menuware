@@ -11,6 +11,12 @@ class MenuBase(object):
         self.is_staff = False
         self.is_superuser = False
         self.is_authenticated = False
+        self.inheritable_attributes = [
+            'render_for_staff',
+            'render_for_superuser',
+            'render_for_authenticated',
+            'render_for_unauthenticated',
+        ]
 
     def save_user_state(self, request):
         """
@@ -131,6 +137,15 @@ class MenuBase(object):
         if matched_index > -1:
             menu_list[matched_index]['selected'] = True
 
+    def copy_attributes(self, parent_dict, child_dict, attrs):
+        """
+        Given a list of attribute, it copies the same attributes from the parent
+        dict to the child dict.
+        """
+        for attr in attrs:
+            if self.is_true(parent_dict, attr):
+                child_dict[attr] = True
+
     def get_submenu_list(self, parent_dict):
         """
         Given a menu item dictionary, it returns a submenu if one exist, or
@@ -140,11 +155,8 @@ class MenuBase(object):
         if submenu is None:
             return submenu
 
-        for item in submenu:
-            item['render_for_staff'] = self.is_true(parent_dict, 'render_for_staff')
-            item['render_for_superuser'] = self.is_true(parent_dict, 'render_for_superuser')
-            item['render_for_authenticated'] = self.is_true(parent_dict, 'render_for_authenticated')
-            item['render_for_unauthenticated'] = self.is_true(parent_dict, 'render_for_unauthenticated')
+        for child_dict in submenu:
+            self.copy_attributes(parent_dict, child_dict, self.inheritable_attributes)
 
         submenu = self.generate_menu(submenu)
         if not submenu:
