@@ -46,6 +46,12 @@ class MenuTestCase(TestCase):
                 "url": "/",
                 "render_for_unauthenticated": True,
                 "render_for_authenticated": True,
+                "submenu": [
+                    {
+                        "name": "submenu",
+                        "url": '/submenu/',
+                    },
+                ],
             },
             {   # Menu item -- visible to unauthenticated users only
                 "name": "Login",
@@ -53,7 +59,7 @@ class MenuTestCase(TestCase):
                 "render_for_unauthenticated": True,
             },
             {   # Menu item -- visible to authenticated users only
-                "name": "Login",
+                "name": "Logout",
                 "url": "/user/logout/",
                 "render_for_authenticated": True,
             },
@@ -62,6 +68,12 @@ class MenuTestCase(TestCase):
                 "url": "/user/account/",
                 "render_for_authenticated": True,
                 "render_for_staff": True,
+                "submenu": [
+                    {
+                        "name": "Profile",
+                        "url": '/user/account/profile/',
+                    },
+                ],
             },
             {   # Menu item -- visible to authenticated superusers only
                 "name": "Full Superuser Account Access",
@@ -147,6 +159,11 @@ class MenuTestCase(TestCase):
         self.request.user = TestUser(staff=True)
         self.menu.save_user_state(self.request)
         self.assertTrue(self.menu.is_staff_safe({'render_for_staff': True}))
+
+    def test_has_name(self):
+        self.assertFalse(self.menu.has_name({}))
+        self.assertFalse(self.menu.has_name({'name': ''}))
+        self.assertTrue(self.menu.has_name({'name': 'Some Name'}))
 
     def test_get_url(self):
         self.assertEqual(self.menu.get_url({}), '')
@@ -235,3 +252,27 @@ class MenuTestCase(TestCase):
         self.request.user = TestUser(superuser=True, authenticated=True)
         nav_count_for_superuser = generate_menu(self.request, self.list_dict)
         self.assertEqual(len(nav_count_for_superuser), 3)
+
+    def test_generate_menu_submenu_attribute_inheritance(self):
+        self.request.user = TestUser(staff=True, authenticated=True)
+        self.menu.save_user_state(self.request)
+        list_dict =  [
+            {   # Menu item -- visible to authenticated staff only
+                "name": "parent",
+                "url": "/user/account/",
+                "render_for_authenticated": True,
+                "render_for_staff": True,
+                "submenu": [
+                    {
+                        "name": "child",
+                        "url": '/user/account/profile/',
+                    },
+                ],
+            },
+        ]
+        nav = self.menu.generate_menu(list_dict)
+        self.assertEqual(len(nav), 1)
+        self.assertEqual(nav[0]['render_for_authenticated'],
+            nav[0]['submenu'][0]['render_for_authenticated'])
+        self.assertEqual(nav[0]['render_for_staff'],
+            nav[0]['submenu'][0]['render_for_staff'])
