@@ -30,9 +30,118 @@ How to install
 
 How to use
 ====================
+Let's add a left / right navigation to an application called `foobar`.
+
+    Directory structure:
+    foobar/__init__.py
+    ... other app related dirs / files
+    foobar/templatetags
+    foobar/templatetags/__init__.py
+    foobar/templatetags/foobar_menu.py
+    foobar/templates/partial_header_left_menu.html
+    foobar/templates/partial_header_right_menu.html
+    foobar/templates/header_menu.html
 
    ```python
+    # in foobar/templatetags/foobar_menu.py
+    from django import template
+    from menuware.menu import generate_menu
+    register = template.Library()
 
+    # custom template tag to render the right navigation menu
+    @register.assignment_tag(takes_context=True)
+    def foobar_header_menu_right(context):
+        """
+        Returns a navigation menu for the top-right header
+        """
+        RIGHT_NAV_MENU = [
+            {   #  Show `Login` to `unauthenticated` users ONLY
+                "name": "Login",
+                "url": "/login/",
+                "render_for_unauthenticated": True,
+            },
+            {   #  Show `Logout` to `authenticated` users ONLY
+                "name": "Logout",
+                "url": "/logout/",
+                "render_for_authenticated": True,
+            },
+        ]
+        return generate_menu(context['request'], RIGHT_NAV_MENU)
+
+    # custom template tag to render the left navigation menu
+    @register.assignment_tag(takes_context=True)
+    def foobar_header_menu_left(context):
+        """
+        Returns a navigation menu for the top-left header
+        """
+        LEFT_NAV_MENU = [
+            {   # Show `Home` to all users
+                "name": "Home",
+                "url": "/",
+                "render_for_unauthenticated": True,
+                "render_for_authenticated": True,
+            },
+            {   # Show `search` to all users
+                "name": "Search",
+                "url": "/search/",
+                "render_for_unauthenticated": True,
+                "render_for_authenticated": True,
+            },
+            {   # Show `Comment Admin` to `staff` users ONLY
+                "name": "Comment Admin",
+                "url": "/review/admin/",
+                "render_for_authenticated": True,
+                "render_for_staff": True,
+            },
+            {   # Show `Account Admin` to `superuser` ONLY
+                "name": "Account Admin",
+                "url": "/account/admin/",
+                "render_for_authenticated": True,
+                "render_for_superuser": True,
+            },
+        ]
+        return generate_menu(context['request'], LEFT_NAV_MENU)
+   ```
+
+   ```html
+    # foobar/templates/partial_header_right_menu.html
+    {% load foobar_menu %}
+    {% foobar_header_menu_right as menu %}
+
+    {% for item in menu %}
+        <li class="{% if item.selected %} active {% endif %}">
+            <a href="{{item.url}}">{{item.name}}</a>
+        </li>
+    {% endfor %}
+   ```
+
+   ```html
+    # foobar/templates/partial_header_left_menu.html
+    {% load foobar_menu %}
+    {% foobar_header_menu_left as menu %}
+
+    {% for item in menu %}
+        <li class="{% if item.selected %} active {% endif %}">
+            <a href="{{item.url}}">{{item.name}}</a>
+        </li>
+    {% endfor %}
+   ```
+
+   ```html
+    # foobar/templates/header_menu.html
+    <!DOCTYPE html>
+    <html>
+        <head><title>Django Menuware</title></head>
+        <body>
+            <div style="float:left;">
+                {% include "foobar/partial_header_left_menu.html" %}
+            </div>
+
+            <div style="float:right;">
+                {% include "foobar/partial_header_right_menu.html" %}
+            </div>
+        </body>
+    </html>
    ```
 
 Running the tests
