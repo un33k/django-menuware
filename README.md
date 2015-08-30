@@ -27,13 +27,20 @@ How to install
         b. cd into django-menuware-* directory
         c. run python setup.py
 
-How to use
+How to use (Simple)
 ====================
 Once you have installed `django-menuware`, then add `menuware` to your INSTALLED_APPS.
 
    ```python
-    # add `MENUWARE_MENU` to your settings.py and set it up as per your requirements.
+    # Add `MENUWARE_MENU` to your settings.py and set it up as per your requirements.
+    ####################################################################################
     # The following example should help you with the layout.
+    # Please note:
+    #   "url" can be a hard-coded (e.g. "/foo/bar") or be a reversible named url (e.g'foo_url_view').
+    #   At least one of `"render_for_unauthenticated" or "render_for_authenticated"` must be set.
+    #   Sub-menu items inherit the `render` attributes of their parent menu item.
+    #
+    ####################################################################################
 
     MENUWARE_MENU = {
         "RIGHT_NAV_MENU": [
@@ -121,6 +128,7 @@ In your template, load the templatetags for building your menu.
     <html>
         <head><title>Django Menuware</title></head>
         <body>
+            <!-- NAV BAR Start -->
             {% get_menu "LEFT_NAV_MENU" as left_menu %}
             <div style="float:left;">
                 {% for item in left_menu %}
@@ -156,15 +164,33 @@ In your template, load the templatetags for building your menu.
                     {% endif %}
                 {% endfor %}
             </div>
+            <!-- NAV BAR End -->
+
+            <!-- Footer Start -->
+            {% get_menu "LEFT_FOOTER_MENU" as left_footer_menu %}
+            <div style="float:left;">
+                <!-- loop through your left footer menus -->
+            </div>
+
+            {% get_menu "RIGH_FOOTER_MENU" as right_footer_menu %}
+            <div style="float:right;">
+                <!-- loop through your right footer menus -->
+            </div>
+            <!-- Footer End -->
         </body>
     </html>
    ```
 
-How to use Advanced
+How to use (Advanced)
 ====================
 Let's add a left / right navigation to an application called `foobar`.
 
+
+    Install `django-menuware`.
+    Note: adding `menuware` to your INSTALLED_APPS is `optional` in this example.
+
     Directory structure:
+    ####################
     foobar/__init__.py
     ... other app related dirs / files
     foobar/templatetags
