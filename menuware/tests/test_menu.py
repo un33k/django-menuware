@@ -256,7 +256,7 @@ class MenuTestCase(TestCase):
     def test_generate_menu_submenu_attribute_inheritance(self):
         self.request.user = TestUser(staff=True, authenticated=True)
         self.menu.save_user_state(self.request)
-        list_dict =  [
+        list_dict = [
             {   # Menu item -- visible to authenticated staff only
                 "name": "parent",
                 "url": "/user/account/",
