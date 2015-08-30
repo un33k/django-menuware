@@ -149,18 +149,15 @@ class MenuBase(object):
     def get_submenu_list(self, parent_dict):
         """
         Given a menu item dictionary, it returns a submenu if one exist, or
-        returns None
+        returns None.
         """
         submenu = parent_dict.get('submenu', None)
-        if submenu is None:
-            return submenu
-
-        for child_dict in submenu:
-            self.copy_attributes(parent_dict, child_dict, self.inheritable_attributes)
-
-        submenu = self.generate_menu(submenu)
-        if not submenu:
-            return None
+        if submenu is not None:
+            for child_dict in submenu:
+                self.copy_attributes(parent_dict, child_dict, self.inheritable_attributes)
+            submenu = self.generate_menu(submenu)
+            if not submenu:
+                submenu = None
         return submenu
 
     def get_menu_list(self, list_dict):
