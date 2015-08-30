@@ -74,6 +74,13 @@ class MenuBase(object):
             yep = False
         return yep
 
+    def has_name(self, item_dict):
+        """
+        Given a menu item dictionary, it returns true if attribute `name` is set.
+        """
+        yep = self.is_true(item_dict, 'name')
+        return yep
+
     def get_url(self, item_dict):
         """
         Given a menu item dictionary, it returns the URL or an empty string.
@@ -86,13 +93,6 @@ class MenuBase(object):
             final_url = url
         return final_url
 
-    def has_name(self, item_dict):
-        """
-        Given a menu item dictionary, it returns true if attribute `name` is set.
-        """
-        yep = self.is_true(item_dict, 'name')
-        return yep
-
     def has_url(self, item_dict):
         """
         Given a menu item dictionary, it returns true if attribute `url` is set.
@@ -101,7 +101,21 @@ class MenuBase(object):
             return False
         return True
 
-    def set_breadcrums(self, menu_list, best_match_url):
+    def process_url(self, item_dict, best_match_url):
+        """
+        Given a menu item dictionary, it returns a consumable `url` and
+        the `best_match_url`.
+        """
+        url = self.get_url(item_dict)
+
+        # record the based matched url on the requested path
+        if len(url) > 1 and url in self.path:
+            if len(best_match_url) < len(url):
+                best_match_url = url
+
+        return url, best_match_url
+
+    def process_breadcrums(self, menu_list, best_match_url):
         """
         Given a menu list, it marks the best match url as selected, which
         can be used as breadcrumbs
@@ -113,6 +127,20 @@ class MenuBase(object):
                 break
         if matched_index > -1:
             menu_list[matched_index]['selected'] = True
+
+    def get_submenu_list(self, item_dict):
+        """
+        Given a menu item dictionary, it returns a submenu if one exist, or
+        returns None
+        """
+        submenu = item_dict.get('submenu', None)
+        if submenu is None:
+            return submenu
+
+        submenu = self.generate_menu(submenu)
+        if not submenu:
+            return None
+        return submenu
 
     def get_menu_list(self, list_dict):
         """
@@ -141,18 +169,14 @@ class MenuBase(object):
         """
         best_match_url = ''
         visible_menu = []
+
         for item in self.get_menu_list(list_dict):
-            url = self.get_url(item)
-
-            # record the based matched url on the requested path
-            if len(url) > 1 and url in self.path:
-                if len(best_match_url) < len(url):
-                    best_match_url = url
-
-            item['url'] = url
+            item['url'], best_match_url = self.process_url(item, best_match_url)
             visible_menu.append(item)
 
-        self.set_breadcrums(visible_menu, best_match_url)
+        self.process_breadcrums(visible_menu, best_match_url)
+        item['submenu'] = self.get_submenu_list(item)
+
         return visible_menu
 
 
