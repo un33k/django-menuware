@@ -27,8 +27,140 @@ How to install
         b. cd into django-menuware-* directory
         c. run python setup.py
 
-
 How to use
+====================
+Once you have installed `django-menuware`, then add `menuware` to your INSTALLED_APPS.
+
+   ```python
+    # add `MENUWARE_MENU` to your settings.py and set it up as per your requirements.
+    # The following example should help you with the layout.
+
+    MENUWARE_MENU = {
+        "RIGHT_NAV_MENU": [
+            {   # Show `Login` to `unauthenticated` users ONLY
+                "name": "Login",
+                "url": "/login/",
+                "render_for_unauthenticated": True,
+            },
+            {   # Show `Account` to `authenticated` users ONLY
+                "name": "Account",
+                "url": "/account/",
+                "render_for_authenticated": True,
+                "submenu": [  # Show submenu to those who could see the `parent` menu
+                    {
+                        "name": "Profile",
+                        "url": "/account/profile/",
+                    },
+                    {
+                        "name": "Preferences",
+                        "url": "/account/preferences/",
+                    },
+                    {
+                        "name": "Social Links",
+                        "url": "/account/social/",
+                    }
+                ],
+            },
+            {   # Show `Logout` to `authenticated` users ONLY
+                "name": "Logout",
+                "url": "/logout/",
+                "render_for_authenticated": True,
+            },
+        ],
+        "LEFT_NAV_MENU": [
+            {   # Show `Home` to all users
+                "name": "Home",
+                "url": "/",
+                "render_for_unauthenticated": True,
+                "render_for_authenticated": True,
+            },
+            {   # Show `Search` to all users
+                "name": "Search",
+                "url": "/search/",
+                "render_for_unauthenticated": True,
+                "render_for_authenticated": True,
+            },
+            {   # Show `Comment Admin` to `staff` users ONLY
+                "name": "Comment Admin",
+                "url": "/review/admin/",
+                "render_for_authenticated": True,
+                "render_for_staff": True,
+            },
+            {   # Show `Account Admin` to `superuser` ONLY
+                "name": "Account Admin",
+                "url": "/account/admin/",
+                "render_for_authenticated": True,
+                "render_for_superuser": True,
+            },
+        ],
+        "LEFT_FOOTER_MENU": [
+            {
+                "name": "Contact Us",
+                "url": "/contact/",
+                "render_for_unauthenticated": True,
+                "render_for_authenticated": True,
+            },
+        ],
+        "RIGHT_FOOTER_MENU": [
+            {
+                "name": "Terms and Conditions",
+                "url": "/terms-condition/",
+                "render_for_unauthenticated": True,
+                "render_for_authenticated": True,
+            },
+        ]
+    }
+   ```
+In your template, load the templatetags for building your menu.
+
+   ```html
+    <!-- base.html -->
+    {% load menuware %}
+
+    <!DOCTYPE html>
+    <html>
+        <head><title>Django Menuware</title></head>
+        <body>
+            {% get_menu "LEFT_NAV_MENU" as left_menu %}
+            <div style="float:left;">
+                {% for item in left_menu %}
+                    <li class="{% if item.selected %} active {% endif %}">
+                        <a href="{{item.url}}">{{item.name}}</a>
+                    </li>
+                    {% if item.submenu %}
+                        <ul>
+                        {% for menu in item.submenu %}
+                            <li class="{% if menu.selected %} active {% endif %}">
+                                <a href="{{menu.url}}">{{menu.name}}</a>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            {% get_menu "RIGHT_NAV_MENU" as right_menu %}
+            <div style="float:right;">
+                {% for item in right_menu %}
+                    <li class="{% if item.selected %} active {% endif %}">
+                        <a href="{{item.url}}">{{item.name}}</a>
+                    </li>
+                    {% if item.submenu %}
+                        <ul>
+                        {% for menu in item.submenu %}
+                            <li class="{% if menu.selected %} active {% endif %}">
+                                <a href="{{menu.url}}">{{menu.name}}</a>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </body>
+    </html>
+   ```
+
+How to use Advanced
 ====================
 Let's add a left / right navigation to an application called `foobar`.
 
