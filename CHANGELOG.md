@@ -1,3 +1,10 @@
+## 0.1.0
+
+Features:
+
+  - Added template tags to load up menus from the setting.py
+
+
 ## 0.0.4
 
 Enhancement:
