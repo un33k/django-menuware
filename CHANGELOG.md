@@ -1,6 +1,13 @@
+## 0.0.4
+
+Enhancement:
+
+  - Added usage to README
+
+
 ## 0.0.3
 
-Features:
+Enhancement:
 
   - Added More Test Cases
   - Clean up
@@ -8,7 +15,7 @@ Features:
 
 ## 0.0.2
 
-Features:
+Enhancement:
 
   - Added Test Cases
 
