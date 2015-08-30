@@ -36,8 +36,8 @@ Once you have installed `django-menuware`, then add `menuware` to your INSTALLED
     ####################################################################################
     # The following example should help you with the layout.
     # Please note:
-    #   "url" can be a hard-coded (e.g. "/foo/bar") or be a reversible named url (e.g'foo_url_view').
-    #   At least one of `"render_for_unauthenticated" or "render_for_authenticated"` must be set.
+    #   "url" can be a hard-coded or `reversible`. (e.g. '/foo/bar' vs. 'foo_url_view').
+    #   Minimally set one of `"render_for_unauthenticated" or "render_for_authenticated"`.
     #   Sub-menu items inherit the `render` attributes of their parent menu item.
     #
     ####################################################################################
@@ -187,7 +187,7 @@ Let's add a left / right navigation to an application called `foobar`.
 
 
     Install `django-menuware`.
-    Note: adding `menuware` to your INSTALLED_APPS is `optional` in this example.
+    Note: you don't need to add `menuware` to your INSTALLED_APPS in this example.
 
     Directory structure:
     ####################
