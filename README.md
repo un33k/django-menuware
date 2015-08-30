@@ -81,7 +81,7 @@ Let's add a left / right navigation to an application called `foobar`.
                 "render_for_unauthenticated": True,
                 "render_for_authenticated": True,
             },
-            {   # Show `search` to all users
+            {   # Show `Search` to all users
                 "name": "Search",
                 "url": "/search/",
                 "render_for_unauthenticated": True,
