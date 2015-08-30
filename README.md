@@ -36,7 +36,7 @@ Once you have installed `django-menuware`, then add `menuware` to your INSTALLED
     ####################################################################################
     # The following example should help you with the layout.
     # Please note:
-    #   "url" can be a hard-coded or `reversible`. (e.g. '/foo/bar' vs. 'foo_url_view').
+    #   "url" can be hard-coded or `reversible`. (e.g. '/foo/bar/' vs. 'foo_url_view').
     #   Minimally set one of `"render_for_unauthenticated" or "render_for_authenticated"`.
     #   Sub-menu items inherit the `render` attributes of their parent menu item.
     #
@@ -93,9 +93,9 @@ Once you have installed `django-menuware`, then add `menuware` to your INSTALLED
                 "render_for_authenticated": True,
                 "render_for_staff": True,
             },
-            {   # Show `Account Admin` to `superuser` ONLY
-                "name": "Account Admin",
-                "url": "/account/admin/",
+            {   # Show `Admin` to `superuser` ONLY
+                "name": "Admin",
+                "url": "admin:index", # Reversible
                 "render_for_authenticated": True,
                 "render_for_superuser": True,
             },
