@@ -40,8 +40,8 @@ Once you have installed `django-menuware`, then add `menuware` to your INSTALLED
     #   Minimally set one of `"render_for_unauthenticated" or "render_for_authenticated"`.
     #   Sub-menu items inherit the `render` attributes of their parent menu item.
     #   Menu items get a `selected` attribute indicating their `active` state.
-    #   It first looks at MENUWARE_MENU to load the menu list, if not found, then it looks
-    #   at the settings.py. (e.g. {% get_menu "ACCOUNT_MENU" as account_menu %} )
+    #   It first looks inside MENUWARE_MENU to load the menu list, if not found, then it looks
+    #   at the settings directly. (e.g. {% get_menu "ACCOUNT_MENU" as account_menu %} )
     ####################################################################################
 
     ACCOUNT_MENU = [

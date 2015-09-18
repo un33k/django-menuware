@@ -1,3 +1,10 @@
+## 0.1.1
+
+Features:
+
+  - Allow any menu name be loaded directly from the settings, bypassing MENUWARE_MENU.
+
+
 ## 0.1.0
 
 Features:
