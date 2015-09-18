@@ -40,7 +40,27 @@ Once you have installed `django-menuware`, then add `menuware` to your INSTALLED
     #   Minimally set one of `"render_for_unauthenticated" or "render_for_authenticated"`.
     #   Sub-menu items inherit the `render` attributes of their parent menu item.
     #   Menu items get a `selected` attribute indicating their `active` state.
+    #   It first looks at MENUWARE_MENU to load the menu list, if not found, then it looks
+    #   at the settings.py. (e.g. {% get_menu "ACCOUNT_MENU" as account_menu %} )
     ####################################################################################
+
+    ACCOUNT_MENU = [
+        {
+            "name": "Profile",
+            "url": "/account/profile/",
+            "render_for_authenticated": True,
+        },
+        {
+            "name": "Preferences",
+            "url": "/account/preferences/",
+            "render_for_authenticated": True,
+        },
+        {
+            "name": "Social Links",
+            "url": "/account/social/",
+            "render_for_authenticated": True,
+        }
+    ]
 
     MENUWARE_MENU = {
         "RIGHT_NAV_MENU": [
@@ -53,20 +73,7 @@ Once you have installed `django-menuware`, then add `menuware` to your INSTALLED
                 "name": "Account",
                 "url": "/account/",
                 "render_for_authenticated": True,
-                "submenu": [  # Show submenu to those who could see the `parent` menu
-                    {
-                        "name": "Profile",
-                        "url": "/account/profile/",
-                    },
-                    {
-                        "name": "Preferences",
-                        "url": "/account/preferences/",
-                    },
-                    {
-                        "name": "Social Links",
-                        "url": "/account/social/",
-                    }
-                ],
+                "submenu": ACCOUNT_MENU,
             },
             {   # Show `Logout` to `authenticated` users ONLY
                 "name": "Logout",
@@ -98,6 +105,12 @@ Once you have installed `django-menuware`, then add `menuware` to your INSTALLED
                 "url": "admin:index", # Reversible
                 "render_for_authenticated": True,
                 "render_for_superuser": True,
+                "submenu": [  # Show submenu to those who could see the `parent` menu
+                    {
+                        "name": "Switch", # switch to user account (su)
+                        "url": "/account/profile/switch",
+                    },
+                ],
             },
         ],
         "LEFT_FOOTER_MENU": [
