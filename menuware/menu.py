@@ -60,7 +60,7 @@ class MenuBase(object):
         show = self.is_true(item_dict, 'render_for_unauthenticated') and not self.is_authenticated
         return show
 
-    def is_superuser_safe(self, item_dict):
+    def show_to_superuser(self, item_dict):
         """
         Given a menu item dictionary, it returns true if menu item should be only shown
         to super users. (e.g. a `admin` menu item)
@@ -70,7 +70,7 @@ class MenuBase(object):
             yep = False
         return yep
 
-    def is_staff_safe(self, item_dict):
+    def show_to_staff(self, item_dict):
         """
         Given a menu item dictionary, it returns true if menu item should be only shown
         to staff users. (e.g. a `limited admin` menu item)
@@ -109,32 +109,34 @@ class MenuBase(object):
             return False
         return True
 
-    def process_url(self, item_dict, best_match_url):
+    def process_url(self, item_dict, best_matched_url):
         """
         Given a menu item dictionary, it returns a consumable `url` and
-        the `best_match_url`.
+        the `best_matched_url`.
         """
         url = self.get_url(item_dict)
 
         # record the based matched url on the requested path
         if len(url) > 1 and url in self.path:
-            if len(best_match_url) < len(url):
-                best_match_url = url
+            if len(best_matched_url) < len(url):
+                best_matched_url = url
 
-        return url, best_match_url
+        return url, best_matched_url
 
-    def process_breadcrums(self, menu_list, best_match_url):
+    def process_breadcrums(self, menu_list, best_matched_url):
         """
         Given a menu list, it marks the best match url as selected, which
         can be used as breadcrumbs
         """
         matched_index = -1
         for item in menu_list:
-            if best_match_url == item['url']:
+            if best_matched_url == item['url']:
                 matched_index = menu_list.index(item)
                 break
         if matched_index > -1:
             menu_list[matched_index]['selected'] = True
+        else:
+            menu_list[matched_index]['selected'] = False
 
     def copy_attributes(self, parent_dict, child_dict, attrs):
         """
@@ -174,9 +176,9 @@ class MenuBase(object):
                 pass
             else:
                 continue
-            if not self.is_superuser_safe(item):
+            if not self.show_to_superuser(item):
                 continue
-            if not self.is_staff_safe(item):
+            if not self.show_to_staff(item):
                 continue
             yield item
 
@@ -184,15 +186,15 @@ class MenuBase(object):
         """
         Given a list of dictionaries, returns a menu list.
         """
-        best_match_url = ''
+        best_matched_url = ''
         visible_menu = []
 
         for item in self.get_menu_list(list_dict):
-            item['url'], best_match_url = self.process_url(item, best_match_url)
+            item['url'], best_matched_url = self.process_url(item, best_matched_url)
             item['submenu'] = self.get_submenu_list(item)
             visible_menu.append(item)
 
-        self.process_breadcrums(visible_menu, best_match_url)
+        self.process_breadcrums(visible_menu, best_matched_url)
 
         return visible_menu
 

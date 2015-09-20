@@ -144,27 +144,27 @@ class MenuTestCase(TestCase):
         self.assertFalse(self.menu.show_to_unauthenticated({'render_for_unauthenticated': False}))
         self.assertTrue(self.menu.show_to_unauthenticated({'render_for_unauthenticated': True}))
 
-    def test_is_superuser_safe(self):
+    def test_show_to_superuser(self):
         self.request.user = TestUser()
         self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.is_superuser_safe({}))
-        self.assertTrue(self.menu.is_superuser_safe({'render_for_superuser': False}))
-        self.assertFalse(self.menu.is_superuser_safe({'render_for_superuser': True}))
+        self.assertTrue(self.menu.show_to_superuser({}))
+        self.assertTrue(self.menu.show_to_superuser({'render_for_superuser': False}))
+        self.assertFalse(self.menu.show_to_superuser({'render_for_superuser': True}))
 
         self.request.user = TestUser(superuser=True)
         self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.is_superuser_safe({'render_for_superuser': True}))
+        self.assertTrue(self.menu.show_to_superuser({'render_for_superuser': True}))
 
-    def test_is_staff_safe(self):
+    def test_show_to_staff(self):
         self.request.user = TestUser()
         self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.is_staff_safe({}))
-        self.assertTrue(self.menu.is_staff_safe({'render_for_staff': False}))
-        self.assertFalse(self.menu.is_staff_safe({'render_for_staff': True}))
+        self.assertTrue(self.menu.show_to_staff({}))
+        self.assertTrue(self.menu.show_to_staff({'render_for_staff': False}))
+        self.assertFalse(self.menu.show_to_staff({'render_for_staff': True}))
 
         self.request.user = TestUser(staff=True)
         self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.is_staff_safe({'render_for_staff': True}))
+        self.assertTrue(self.menu.show_to_staff({'render_for_staff': True}))
 
     def test_has_name(self):
         self.assertFalse(self.menu.has_name({}))
