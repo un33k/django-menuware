@@ -1,3 +1,10 @@
+## 0.1.2
+
+BugFix:
+
+  - Recalculate active state for all objects, including the out-of-focus ones.
+
+
 ## 0.1.1
 
 Features:

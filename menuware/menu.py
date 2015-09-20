@@ -1,3 +1,5 @@
+import copy
+
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import NoReverseMatch
 
@@ -180,7 +182,7 @@ class MenuBase(object):
                 continue
             if not self.show_to_staff(item):
                 continue
-            yield item
+            yield copy.copy(item)
 
     def generate_menu(self, list_dict):
         """
