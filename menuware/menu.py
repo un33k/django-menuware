@@ -1,5 +1,3 @@
-import copy
-
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import NoReverseMatch
 
@@ -82,6 +80,13 @@ class MenuBase(object):
             yep = False
         return yep
 
+    def initialize(self, item_dict):
+        """
+        Given a menu item, it sets key attributes to their original states.
+        """
+        item_dict['selected'] = False
+        return item_dict
+
     def has_name(self, item_dict):
         """
         Given a menu item dictionary, it returns true if attribute `name` is set.
@@ -137,8 +142,6 @@ class MenuBase(object):
                 break
         if matched_index > -1:
             menu_list[matched_index]['selected'] = True
-        else:
-            menu_list[matched_index]['selected'] = False
 
     def copy_attributes(self, parent_dict, child_dict, attrs):
         """
@@ -182,7 +185,7 @@ class MenuBase(object):
                 continue
             if not self.show_to_staff(item):
                 continue
-            yield copy.copy(item)
+            yield item
 
     def generate_menu(self, list_dict):
         """
@@ -192,6 +195,7 @@ class MenuBase(object):
         visible_menu = []
 
         for item in self.get_menu_list(list_dict):
+            item = self.initialize(item)
             item['url'], best_matched_url = self.process_url(item, best_matched_url)
             item['submenu'] = self.get_submenu_list(item)
             visible_menu.append(item)
