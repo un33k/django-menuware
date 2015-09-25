@@ -130,15 +130,16 @@ class MenuBase(object):
         Given a menu list, it marks the best match url as selected, which
         can be used as breadcrumbs
         """
-        matched_index = -1
-        for item in menu_list:
-            if best_matched_url == item['url']:
-                matched_index = menu_list.index(item)
-                break
-        if matched_index > -1:
-            menu_list[matched_index]['selected'] = True
-        else:
-            menu_list[matched_index]['selected'] = False
+        if menu_list:
+            matched_index = -1
+            for item in menu_list:
+                if best_matched_url == item['url']:
+                    matched_index = menu_list.index(item)
+                    break
+            if matched_index > -1:
+                menu_list[matched_index]['selected'] = True
+            else:
+                menu_list[matched_index]['selected'] = False
 
     def copy_attributes(self, parent_dict, child_dict, attrs):
         """

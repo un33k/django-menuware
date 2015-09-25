@@ -1,3 +1,10 @@
+## 0.1.3
+
+BugFix:
+
+  - Skip breadcrumbs for empty list
+
+
 ## 0.1.2
 
 BugFix:
