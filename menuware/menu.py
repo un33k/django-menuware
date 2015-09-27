@@ -150,7 +150,7 @@ class MenuBase(object):
             if self.is_true(parent_dict, attr):
                 child_dict[attr] = True
 
-    def get_submenu_list(self, parent_dict):
+    def get_submenu_list(self, parent_dict, depth):
         """
         Given a menu item dictionary, it returns a submenu if one exist, or
         returns None.
@@ -159,7 +159,7 @@ class MenuBase(object):
         if submenu is not None:
             for child_dict in submenu:
                 self.copy_attributes(parent_dict, child_dict, self.inheritable_attributes)
-            submenu = self.generate_menu(submenu)
+            submenu = self.generate_menu(submenu, depth)
             if not submenu:
                 submenu = None
         return submenu
@@ -185,16 +185,17 @@ class MenuBase(object):
                 continue
             yield copy.copy(item)
 
-    def generate_menu(self, list_dict):
+    def generate_menu(self, list_dict, depth=None):
         """
         Given a list of dictionaries, returns a menu list.
         """
         best_matched_url = ''
         visible_menu = []
-
+        current_depth = depth or 0
         for item in self.get_menu_list(list_dict):
             item['url'], best_matched_url = self.process_url(item, best_matched_url)
-            item['submenu'] = self.get_submenu_list(item)
+            item['depth'] = current_depth
+            item['submenu'] = self.get_submenu_list(item, depth=current_depth + 1)
             visible_menu.append(item)
 
         self.process_breadcrums(visible_menu, best_matched_url)

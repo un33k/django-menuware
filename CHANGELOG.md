@@ -1,3 +1,10 @@
+## 0.1.4
+
+BugFix:
+
+  - Added menu `depth` to item. top-nav: depth=0, sub-nav: depth=1 etc.
+
+
 ## 0.1.3
 
 BugFix:
