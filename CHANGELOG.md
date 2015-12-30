@@ -1,3 +1,10 @@
+## 0.1.5
+
+Enhancement:
+
+  - Updated travis to include Django 1.9
+
+
 ## 0.1.4
 
 BugFix:
