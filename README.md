@@ -128,6 +128,18 @@ Once you have installed `django-menuware`, then add `menuware` to your INSTALLED
                 "render_for_unauthenticated": True,
                 "render_for_authenticated": True,
             },
+            {   # `portal.utils` will be imported and `is_not_main_site(request.user)` will be called (dotted notations only)
+                "name": "Blog",
+                "url": "/blog",
+                "render_for_unauthenticated": True,
+                "render_for_user_when_condition_is_true": "portal.utils.is_not_main_site",
+            },
+            {   # `portal.utils` will be imported and `is_user_is_paid_customer(request.user)` will be called (dotted notations only)
+                "name": "Blog",
+                "url": "/blog",
+                "render_for_authenticated": True, # login is required to check if user is a paid customer
+                "render_for_user_when_condition_is_true": "portal.utils.is_user_is_paid_customer",
+            },
         ]
     }
    ```

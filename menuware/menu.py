@@ -1,5 +1,7 @@
 import copy
 
+from importlib import import_module
+
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import NoReverseMatch
 
@@ -10,6 +12,7 @@ class MenuBase(object):
     """
     def __init__(self):
         self.path = ''
+        self.user = None
         self.is_staff = False
         self.is_superuser = False
         self.is_authenticated = False
@@ -18,12 +21,14 @@ class MenuBase(object):
             'render_for_superuser',
             'render_for_authenticated',
             'render_for_unauthenticated',
+            'render_for_user_when_condition_is_true',
         ]
 
     def save_user_state(self, request):
         """
         Given a request object, store the current user attributes
         """
+        self.user = request.user
         self.path = request.path
         self.is_staff = request.user.is_staff
         self.is_superuser = request.user.is_superuser
@@ -44,6 +49,26 @@ class MenuBase(object):
         """
         show = self.is_true(item_dict, 'render_for_unauthenticated') and \
             self.is_true(item_dict, 'render_for_authenticated')
+        return show
+
+    def show_to_user_if_condition_is_true(self, item_dict):
+        """
+        Given a menu item dictionary, it returns true if menu item should be only shown
+        to users if a set condition is true. (e.g. show if user is remember of admin group)
+        """
+        condition_check_path = item_dict.get('render_for_user_when_condition_is_true')
+        if condition_check_path is None:
+            return True
+
+        condition_check_module = '.'.join(condition_check_path.split('.')[:-1])
+        condition_check_procedure = condition_check_path.split('.')[-1]
+        condition_check_module = import_module(condition_check_module)
+        condition_check_procedure = getattr(condition_check_module, condition_check_procedure)
+
+        if condition_check_procedure is None:
+            return False
+
+        show = condition_check_procedure(self.user)
         return show
 
     def show_to_authenticated(self, item_dict):
@@ -178,6 +203,8 @@ class MenuBase(object):
             elif self.show_to_unauthenticated(item):
                 pass
             else:
+                continue
+            if not self.show_to_user_if_condition_is_true(item):
                 continue
             if not self.show_to_superuser(item):
                 continue
