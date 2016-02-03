@@ -12,7 +12,7 @@ class MenuBase(object):
     """
     def __init__(self):
         self.path = ''
-        self.user = None
+        self.request = None
         self.is_staff = False
         self.is_superuser = False
         self.is_authenticated = False
@@ -28,7 +28,7 @@ class MenuBase(object):
         """
         Given a request object, store the current user attributes
         """
-        self.user = request.user
+        self.request = request
         self.path = request.path
         self.is_staff = request.user.is_staff
         self.is_superuser = request.user.is_superuser
@@ -68,7 +68,7 @@ class MenuBase(object):
         if condition_check_procedure is None:
             return False
 
-        show = condition_check_procedure(self.user)
+        show = condition_check_procedure(self.request)
         return show
 
     def show_to_authenticated(self, item_dict):

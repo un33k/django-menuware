@@ -4,8 +4,8 @@ from ..menu import MenuBase
 from ..menu import generate_menu
 
 
-def is_user_happy(user):
-    return user.is_happy
+def is_user_happy(request):
+    return request.user.is_happy
 
 
 def is_main_site(user):

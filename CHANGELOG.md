@@ -1,3 +1,9 @@
+## 0.1.7
+
+Enhancement:
+
+  - pass the `request` object to the `render_for_user_when_condition_is_true` method instead of the `user` object
+
 ## 0.1.6
 
 Feature:
