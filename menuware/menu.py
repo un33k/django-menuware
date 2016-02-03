@@ -172,8 +172,9 @@ class MenuBase(object):
         dict to the child dict.
         """
         for attr in attrs:
-            if self.is_true(parent_dict, attr):
-                child_dict[attr] = True
+            has_attr = parent_dict.get(attr)
+            if has_attr is not None:
+                child_dict[attr] = has_attr
 
     def get_submenu_list(self, parent_dict, depth):
         """

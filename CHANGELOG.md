@@ -1,3 +1,9 @@
+## 0.1.8
+
+BugFix:
+
+  - Properly handle `render_for_user_when_condition_is_true` submenu(s)
+
 ## 0.1.7
 
 Enhancement:
