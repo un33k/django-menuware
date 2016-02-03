@@ -1,3 +1,9 @@
+## 0.1.9
+
+Enhancement:
+
+  - Process breadcrumbs based on nodes and not partial paths
+
 ## 0.1.8
 
 BugFix:

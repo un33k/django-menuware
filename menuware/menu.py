@@ -136,35 +136,26 @@ class MenuBase(object):
             return False
         return True
 
-    def process_url(self, item_dict, best_matched_url):
+    def is_selected(self, item_dict):
         """
-        Given a menu item dictionary, it returns a consumable `url` and
-        the `best_matched_url`.
+        Given a menu item dictionary, it returns true if `url` is on path.
         """
         url = self.get_url(item_dict)
+        if len(url) and url == self.path:
+            return True
+        return False
 
-        # record the based matched url on the requested path
-        if len(url) > 1 and url in self.path:
-            if len(best_matched_url) < len(url):
-                best_matched_url = url
-
-        return url, best_matched_url
-
-    def process_breadcrums(self, menu_list, best_matched_url):
+    def process_breadcrums(self, menu_list):
         """
-        Given a menu list, it marks the best match url as selected, which
+        Given a menu list, it marks the items on the current path as selected, which
         can be used as breadcrumbs
         """
-        if menu_list:
-            matched_index = -1
-            for item in menu_list:
-                if best_matched_url == item['url']:
-                    matched_index = menu_list.index(item)
-                    break
-            if matched_index > -1:
-                menu_list[matched_index]['selected'] = True
-            else:
-                menu_list[matched_index]['selected'] = False
+        for item in menu_list:
+            if item['submenu']:
+                item['selected'] = self.process_breadcrums(item['submenu'])
+            if item['selected']:
+                return True
+        return False
 
     def copy_attributes(self, parent_dict, child_dict, attrs):
         """
@@ -217,16 +208,16 @@ class MenuBase(object):
         """
         Given a list of dictionaries, returns a menu list.
         """
-        best_matched_url = ''
         visible_menu = []
         current_depth = depth or 0
         for item in self.get_menu_list(list_dict):
-            item['url'], best_matched_url = self.process_url(item, best_matched_url)
             item['depth'] = current_depth
+            item['url'] = self.get_url(item)
+            item['selected'] = self.is_selected(item)
             item['submenu'] = self.get_submenu_list(item, depth=current_depth + 1)
             visible_menu.append(item)
 
-        self.process_breadcrums(visible_menu, best_matched_url)
+        self.process_breadcrums(visible_menu)
 
         return visible_menu
 
