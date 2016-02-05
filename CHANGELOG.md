@@ -1,3 +1,9 @@
+## 0.1.10
+
+Feature:
+
+  - Added `render_for_user_when_condition_is_false` feature
+
 ## 0.1.9
 
 Enhancement:

@@ -140,6 +140,12 @@ Once you have installed `django-menuware`, then add `menuware` to your INSTALLED
                 "render_for_authenticated": True, # login is required to check if user is a paid customer
                 "render_for_user_when_condition_is_true": "portal.utils.is_user_is_paid_customer",
             },
+            {   # `portal.utils` will be imported and `is_user_is_paid_customer(request)` will be called (dotted notations only)
+                "name": "Upgrade",
+                "url": "/upgrade",
+                "render_for_authenticated": True, # if free-tier user, promote upgrade
+                "render_for_user_when_condition_is_false": "portal.utils.is_user_is_paid_customer",
+            },
         ]
     }
    ```

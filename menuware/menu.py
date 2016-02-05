@@ -1,9 +1,10 @@
 import copy
 
-from importlib import import_module
 
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import NoReverseMatch
+
+from . import utils as util
 
 
 class MenuBase(object):
@@ -22,6 +23,7 @@ class MenuBase(object):
             'render_for_authenticated',
             'render_for_unauthenticated',
             'render_for_user_when_condition_is_true',
+            'render_for_user_when_condition_is_false',
         ]
 
     def save_user_state(self, request):
@@ -60,16 +62,28 @@ class MenuBase(object):
         if condition_check_path is None:
             return True
 
-        condition_check_module = '.'.join(condition_check_path.split('.')[:-1])
-        condition_check_procedure = condition_check_path.split('.')[-1]
-        condition_check_module = import_module(condition_check_module)
-        condition_check_procedure = getattr(condition_check_module, condition_check_procedure)
-
+        condition_check_procedure = util.get_func(condition_check_path)
         if condition_check_procedure is None:
             return False
 
         show = condition_check_procedure(self.request)
         return show
+
+    def show_to_user_if_condition_is_false(self, item_dict):
+        """
+        Given a menu item dictionary, it returns true if menu item should be only shown
+        to users if a set condition is false. (e.g. show if user is not remember of admin group)
+        """
+        condition_check_path = item_dict.get('render_for_user_when_condition_is_false')
+        if condition_check_path is None:
+            return True
+
+        condition_check_procedure = util.get_func(condition_check_path)
+        if condition_check_procedure is None:
+            return False
+
+        show = condition_check_procedure(self.request)
+        return not show
 
     def show_to_authenticated(self, item_dict):
         """
@@ -197,6 +211,8 @@ class MenuBase(object):
             else:
                 continue
             if not self.show_to_user_if_condition_is_true(item):
+                continue
+            if not self.show_to_user_if_condition_is_false(item):
                 continue
             if not self.show_to_superuser(item):
                 continue

@@ -12,6 +12,10 @@ def is_main_site(request):
     return False
 
 
+def is_free_user(request):
+    return True
+
+
 class TestUser(object):
     is_auth = False
     is_staff = False
@@ -104,11 +108,10 @@ class MenuTestCase(TestCase):
                 "render_for_user_when_condition_is_true": 'menuware.tests.test_menu.is_user_happy',
             },
             {   # Menu item -- visible to users visiting the main site
-                "name": "Conditional Account Access - Main site",
-                "url": "/admin/",
-                "render_for_unauthenticated": True,
+                "name": "Upgrade user",
+                "url": "/upgrade/",
                 "render_for_authenticated": True,
-                "render_for_user_when_condition_is_true": 'menuware.tests.test_menu.is_main_site',
+                "render_for_user_when_condition_is_false": 'menuware.tests.test_menu.is_free_user',
             },
         ]
 
@@ -189,7 +192,7 @@ class MenuTestCase(TestCase):
         self.menu.save_user_state(self.request)
         self.assertTrue(self.menu.show_to_staff({'render_for_staff': True}))
 
-    def test_show_to_user_conditionally(self):
+    def test_show_to_user_conditionally_ture(self):
         self.request.user = TestUser(happy=True)
         self.menu.save_user_state(self.request)
         self.assertTrue(self.menu.show_to_user_if_condition_is_true({
@@ -199,12 +202,6 @@ class MenuTestCase(TestCase):
         self.request.user = TestUser(authenticated=True, happy=True)
         self.menu.save_user_state(self.request)
         self.assertTrue(self.menu.show_to_user_if_condition_is_true({
-            'render_for_user_when_condition_is_true': 'menuware.tests.test_menu.is_user_happy'
-        }))
-
-        self.request.user = TestUser(authenticated=True, happy=False)
-        self.menu.save_user_state(self.request)
-        self.assertFalse(self.menu.show_to_user_if_condition_is_true({
             'render_for_user_when_condition_is_true': 'menuware.tests.test_menu.is_user_happy'
         }))
 
@@ -226,6 +223,43 @@ class MenuTestCase(TestCase):
             'render_for_user_when_condition_is_true': 'menuware.tests.test_menu.is_main_site'
         }))
 
+        self.request.user = TestUser(authenticated=True)
+        self.menu.save_user_state(self.request)
+        self.assertTrue(self.menu.show_to_user_if_condition_is_true({
+            'render_for_user_when_condition_is_true': 'menuware.tests.test_menu.is_free_user'
+        }))
+
+    def test_show_to_user_conditionally_false(self):
+        self.request.user = TestUser(happy=False)
+        self.menu.save_user_state(self.request)
+        self.assertTrue(self.menu.show_to_user_if_condition_is_false({
+            'render_for_user_when_condition_is_false': 'menuware.tests.test_menu.is_user_happy'
+        }))
+
+        self.request.user = TestUser(authenticated=True, happy=False)
+        self.menu.save_user_state(self.request)
+        self.assertTrue(self.menu.show_to_user_if_condition_is_false({
+            'render_for_user_when_condition_is_false': 'menuware.tests.test_menu.is_user_happy'
+        }))
+
+        self.request.user = TestUser(happy=False)
+        self.menu.save_user_state(self.request)
+        self.assertTrue(self.menu.show_to_user_if_condition_is_false({
+            'render_for_user_when_condition_is_false': 'menuware.tests.test_menu.is_user_happy'
+        }))
+
+        self.request.user = TestUser()
+        self.menu.save_user_state(self.request)
+        self.assertTrue(self.menu.show_to_user_if_condition_is_false({
+            'render_for_user_when_condition_is_false': 'menuware.tests.test_menu.is_main_site'
+        }))
+
+        self.request.user = TestUser(authenticated=True)
+        self.menu.save_user_state(self.request)
+        self.assertFalse(self.menu.show_to_user_if_condition_is_false({
+            'render_for_user_when_condition_is_false': 'menuware.tests.test_menu.is_free_user'
+        }))
+
     def test_has_name(self):
         self.assertFalse(self.menu.has_name({}))
         self.assertFalse(self.menu.has_name({'name': ''}))
@@ -242,98 +276,6 @@ class MenuTestCase(TestCase):
         self.assertTrue(self.menu.get_url({'url': '/'}))
         self.assertTrue(self.menu.get_url({'url': '/foo/bar'}))
         self.assertTrue(self.menu.get_url({'url': 'named_url'}))
-
-    def test_get_menu_list_anonymous_user(self):
-        self.request.user = TestUser()
-        self.menu.save_user_state(self.request)
-        nav_count_for_anonymous_user = 0
-        for item in self.menu.get_menu_list(self.list_dict):
-            nav_count_for_anonymous_user += 1
-        self.assertEqual(nav_count_for_anonymous_user, 2)
-
-    def test_get_menu_list_authenticated_user(self):
-        self.request.user = TestUser(authenticated=True)
-        self.menu.save_user_state(self.request)
-        nav_count_for_authenticated_user = 0
-        for item in self.menu.get_menu_list(self.list_dict):
-            nav_count_for_authenticated_user += 1
-        self.assertEqual(nav_count_for_authenticated_user, 2)
-
-    def test_get_menu_list_staff_user(self):
-        self.request.user = TestUser(staff=True, authenticated=True)
-        self.menu.save_user_state(self.request)
-        nav_count_for_staff_user = 0
-        for item in self.menu.get_menu_list(self.list_dict):
-            nav_count_for_staff_user += 1
-        self.assertEqual(nav_count_for_staff_user, 3)
-
-    def test_get_menu_list_superuser(self):
-        self.request.user = TestUser(superuser=True, authenticated=True)
-        self.menu.save_user_state(self.request)
-        nav_count_for_superuser = 0
-        for item in self.menu.get_menu_list(self.list_dict):
-            nav_count_for_superuser += 1
-        self.assertEqual(nav_count_for_superuser, 3)
-
-    def test_generate_menu_anonymous_user(self):
-        self.request.user = TestUser()
-        self.menu.save_user_state(self.request)
-        nav_count_for_anonymous_user = self.menu.generate_menu(self.list_dict)
-        self.assertEqual(len(nav_count_for_anonymous_user), 2)
-
-    def test_generate_menu_authenticated_user(self):
-        self.request.user = TestUser(authenticated=True)
-        self.menu.save_user_state(self.request)
-        nav_count_for_authenticated_user = self.menu.generate_menu(self.list_dict)
-        self.assertEqual(len(nav_count_for_authenticated_user), 2)
-
-    def test_generate_menu_staff_user(self):
-        self.request.user = TestUser(staff=True, authenticated=True)
-        self.menu.save_user_state(self.request)
-        nav_count_for_staff_user = self.menu.generate_menu(self.list_dict)
-        self.assertEqual(len(nav_count_for_staff_user), 3)
-
-    def test_generate_menu_superuser(self):
-        self.request.user = TestUser(superuser=True, authenticated=True)
-        self.menu.save_user_state(self.request)
-        nav_count_for_superuser = self.menu.generate_menu(self.list_dict)
-        self.assertEqual(len(nav_count_for_superuser), 3)
-
-    def test_generate_menu_unauthenticated_user_condition_true(self):
-        self.request.user = TestUser(happy=True)
-        self.menu.save_user_state(self.request)
-        nav_count_for_conditional_user = 0
-        for item in self.menu.get_menu_list(self.list_dict):
-            nav_count_for_conditional_user += 1
-        self.assertEqual(nav_count_for_conditional_user, 2)
-
-    def test_generate_menu_authenticated_user_condition_true(self):
-        self.request.user = TestUser(authenticated=True, happy=True)
-        self.menu.save_user_state(self.request)
-        nav_count_for_conditional_user = 0
-        for item in self.menu.get_menu_list(self.list_dict):
-            nav_count_for_conditional_user += 1
-        self.assertEqual(nav_count_for_conditional_user, 3)
-
-    def test_generate_menu_anonymous_user_callable(self):
-        self.request.user = TestUser()
-        nav_count_for_anonymous_user = generate_menu(self.request, self.list_dict)
-        self.assertEqual(len(nav_count_for_anonymous_user), 2)
-
-    def test_generate_menu_authenticated_user_callable(self):
-        self.request.user = TestUser(authenticated=True)
-        nav_count_for_authenticated_user = generate_menu(self.request, self.list_dict)
-        self.assertEqual(len(nav_count_for_authenticated_user), 2)
-
-    def test_generate_menu_staff_user_callable(self):
-        self.request.user = TestUser(staff=True, authenticated=True)
-        nav_count_for_staff_user = generate_menu(self.request, self.list_dict)
-        self.assertEqual(len(nav_count_for_staff_user), 3)
-
-    def test_generate_menu_superuser_callable(self):
-        self.request.user = TestUser(superuser=True, authenticated=True)
-        nav_count_for_superuser = generate_menu(self.request, self.list_dict)
-        self.assertEqual(len(nav_count_for_superuser), 3)
 
     def test_generate_menu_submenu_attribute_inheritance(self):
         self.request.user = TestUser(staff=True, authenticated=True, happy=True)
@@ -373,6 +315,12 @@ class MenuTestCase(TestCase):
                         "url": '/user/account/profile/',
                     },
                 ],
+            },
+            {   # Menu item -- visible to free-tier members
+                "name": "Upgrade user",
+                "url": "/upgrade/",
+                "render_for_authenticated": True,
+                "render_for_user_when_condition_is_false": 'menuware.tests.test_menu.is_free_user',
             },
         ]
         nav = self.menu.generate_menu(list_dict)
