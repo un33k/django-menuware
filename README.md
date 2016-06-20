@@ -6,8 +6,6 @@ Django Menuware
 [![status-image]][status-link]
 [![version-image]][version-link]
 [![coverage-image]][coverage-link]
-[![download-image]][download-link]
-
 
 Overview
 ====================
