@@ -1,3 +1,9 @@
+## 1.0.0
+
+Feature:
+
+  - Added add validation list option feature
+
 ## 0.1.10
 
 Feature:
