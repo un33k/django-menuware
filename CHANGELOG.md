@@ -2,10 +2,11 @@
 
 Feature:
 
-  - Drop support for django < 1.8
-  - Change licensing from BSD to MIT
-  - Added add validation list option feature
-    - Break backward compatibility with all versions < 1.0.0
+  - Dropped support for Django < 1.8
+  - Dropped support for Python < 3.4
+  - Changed licensing from BSD to MIT
+  - Added validation list option feature
+    - Not backward compatible with versions < 1.0.0
 
 ## 0.1.10
 
