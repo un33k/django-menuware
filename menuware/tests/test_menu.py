@@ -1,33 +1,45 @@
 from django.http import HttpRequest
 from django.test import TestCase
+from django.core.exceptions import ImproperlyConfigured
+
 from ..menu import MenuBase
 from ..menu import generate_menu
+from ..templatetags.menuware import get_menu
 
 
 def is_user_happy(request):
-    return request.user.is_happy
+    return request.user.is_auth and request.user.is_happy
+
+
+def is_paid_user(request):
+    return request.user.is_auth and request.user.is_happy
 
 
 def is_main_site(request):
-    return False
-
-
-def is_free_user(request):
+    """
+    Non-User condition.
+    """
     return True
 
 
 class TestUser(object):
+    """
+    Test User Object.
+    """
     is_auth = False
     is_staff = False
     is_superuser = False
     is_happy = False
+    is_paid = False
 
-    def __init__(self, staff=False, superuser=False, authenticated=False, happy=False):
-        self.is_staff = staff
-        self.is_superuser = superuser
+    def __init__(self, staff=False, superuser=False, authenticated=False, happy=False, paid=False):
         self.is_auth = authenticated
-        self.is_happy = happy
+        self.is_staff = authenticated and staff
+        self.is_superuser = authenticated and superuser
+        self.is_happy = authenticated and happy
+        self.is_paid = authenticated and paid
 
+    @property
     def is_authenticated(self):
         return self.is_auth
 
@@ -37,228 +49,20 @@ class MenuTestCase(TestCase):
     Menu Test
     """
     def setUp(self):
+        """
+        Setup the test.
+        """
         self.request = HttpRequest()
         self.request.path = '/'
         self.menu = MenuBase()
-        self.list_dict = [
-            {   # Menu item -- invisible without a valid `name` attribute
-                "url": "/",
-                "render_for_unauthenticated": True,
-                "render_for_authenticated": True,
-            },
-            {   # Menu item -- invisible with a black `name`
-                "name": "",
-                "url": "/",
-                "render_for_unauthenticated": True,
-                "render_for_authenticated": True,
-            },
-            {   # Menu item -- invisible without a valid `url` attribute
-                "name": "No URL Malformed Entry",
-                "render_for_unauthenticated": True,
-                "render_for_authenticated": True,
-            },
-            {   # Menu item -- invisible without at least one auth render option
-                "name": "Main",
-                "url": "/",
-            },
-            {   # Menu item -- visible to anyone, anytime
-                "name": "Main",
-                "url": "/",
-                "render_for_unauthenticated": True,
-                "render_for_authenticated": True,
-                "submenu": [
-                    {
-                        "name": "submenu",
-                        "url": '/submenu/',
-                    },
-                ],
-            },
-            {   # Menu item -- visible to unauthenticated users only
-                "name": "Login",
-                "url": "admin:login",
-                "render_for_unauthenticated": True,
-            },
-            {   # Menu item -- visible to authenticated users only
-                "name": "Logout",
-                "url": "/user/logout/",
-                "render_for_authenticated": True,
-            },
-            {   # Menu item -- visible to authenticated staff only
-                "name": "Limited Staff Account Access",
-                "url": "/user/account/",
-                "render_for_authenticated": True,
-                "render_for_staff": True,
-                "submenu": [
-                    {
-                        "name": "Profile",
-                        "url": '/user/account/profile/',
-                    },
-                ],
-            },
-            {   # Menu item -- visible to authenticated superusers only
-                "name": "Full Superuser Account Access",
-                "url": "/admin/",
-                "render_for_authenticated": True,
-                "render_for_superuser": True,
-            },
-            {   # Menu item -- visible to users if they are happy
-                "name": "Conditional Account Access - Happy users",
-                "url": "/admin/",
-                "render_for_authenticated": True,
-                "render_for_user_when_condition_is_true": 'menuware.tests.test_menu.is_user_happy',
-            },
-            {   # Menu item -- visible to users visiting the main site
-                "name": "Upgrade user",
-                "url": "/upgrade/",
-                "render_for_authenticated": True,
-                "render_for_user_when_condition_is_false": 'menuware.tests.test_menu.is_free_user',
-            },
-        ]
 
-    def test_reqular_user(self):
-        self.request.user = TestUser()
-        self.menu.save_user_state(self.request)
-        self.assertFalse(self.menu.is_staff)
-        self.assertFalse(self.menu.is_superuser)
-        self.assertFalse(self.menu.is_authenticated)
-
-    def test_staff(self):
-        self.request.user = TestUser(staff=True)
-        self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.is_staff)
-        self.assertFalse(self.menu.is_superuser)
-        self.assertFalse(self.menu.is_authenticated)
-
-    def test_superuser(self):
-        self.request.user = TestUser(superuser=True)
-        self.menu.save_user_state(self.request)
-        self.assertFalse(self.menu.is_staff)
-        self.assertTrue(self.menu.is_superuser)
-        self.assertFalse(self.menu.is_authenticated)
-
-    def test_authenticated_user(self):
+    def test_tempalte_tag(self):
         self.request.user = TestUser(authenticated=True)
-        self.menu.save_user_state(self.request)
-        self.assertFalse(self.menu.is_staff)
-        self.assertFalse(self.menu.is_superuser)
-        self.assertTrue(self.menu.is_authenticated)
-
-    def test_is_true(self):
-        self.assertTrue(self.menu.is_true({'foo': True}, 'foo'))
-        self.assertFalse(self.menu.is_true({'foo': False}, 'foo'))
-        self.assertFalse(self.menu.is_true({'foo': True}, 'bar'))
-
-    def test_show_to_all(self):
-        self.assertFalse(self.menu.show_to_all({}))
-        self.assertFalse(self.menu.show_to_all({'render_for_unauthenticated': False}))
-        self.assertFalse(self.menu.show_to_all({'render_for_authenticated': False}))
-        self.assertFalse(self.menu.show_to_all({'render_for_unauthenticated': True}))
-        self.assertFalse(self.menu.show_to_all({'render_for_unauthenticated': True, 'render_for_authenticated': False}))
-        self.assertTrue(self.menu.show_to_all({'render_for_unauthenticated': True, 'render_for_authenticated': True}))
-
-    def test_show_to_authenticated_users(self):
-        self.request.user = TestUser(authenticated=True)
-        self.menu.save_user_state(self.request)
-        self.assertFalse(self.menu.show_to_authenticated({}))
-        self.assertFalse(self.menu.show_to_authenticated({'render_for_authenticated': False}))
-        self.assertTrue(self.menu.show_to_authenticated({'render_for_authenticated': True}))
-
-    def test_show_to_unauthenticated_users(self):
-        self.request.user = TestUser()
-        self.menu.save_user_state(self.request)
-        self.assertFalse(self.menu.show_to_unauthenticated({}))
-        self.assertFalse(self.menu.show_to_unauthenticated({'render_for_unauthenticated': False}))
-        self.assertTrue(self.menu.show_to_unauthenticated({'render_for_unauthenticated': True}))
-
-    def test_show_to_superuser(self):
-        self.request.user = TestUser()
-        self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.show_to_superuser({}))
-        self.assertTrue(self.menu.show_to_superuser({'render_for_superuser': False}))
-        self.assertFalse(self.menu.show_to_superuser({'render_for_superuser': True}))
-
-        self.request.user = TestUser(superuser=True)
-        self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.show_to_superuser({'render_for_superuser': True}))
-
-    def test_show_to_staff(self):
-        self.request.user = TestUser()
-        self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.show_to_staff({}))
-        self.assertTrue(self.menu.show_to_staff({'render_for_staff': False}))
-        self.assertFalse(self.menu.show_to_staff({'render_for_staff': True}))
-
-        self.request.user = TestUser(staff=True)
-        self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.show_to_staff({'render_for_staff': True}))
-
-    def test_show_to_user_conditionally_ture(self):
-        self.request.user = TestUser(happy=True)
-        self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.show_to_user_if_condition_is_true({
-            'render_for_user_when_condition_is_true': 'menuware.tests.test_menu.is_user_happy'
-        }))
-
-        self.request.user = TestUser(authenticated=True, happy=True)
-        self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.show_to_user_if_condition_is_true({
-            'render_for_user_when_condition_is_true': 'menuware.tests.test_menu.is_user_happy'
-        }))
-
-        self.request.user = TestUser(happy=False)
-        self.menu.save_user_state(self.request)
-        self.assertFalse(self.menu.show_to_user_if_condition_is_true({
-            'render_for_user_when_condition_is_true': 'menuware.tests.test_menu.is_user_happy'
-        }))
-
-        self.request.user = TestUser()
-        self.menu.save_user_state(self.request)
-        self.assertFalse(self.menu.show_to_user_if_condition_is_true({
-            'render_for_user_when_condition_is_true': 'menuware.tests.test_menu.is_main_site'
-        }))
-
-        self.request.user = TestUser(authenticated=True)
-        self.menu.save_user_state(self.request)
-        self.assertFalse(self.menu.show_to_user_if_condition_is_true({
-            'render_for_user_when_condition_is_true': 'menuware.tests.test_menu.is_main_site'
-        }))
-
-        self.request.user = TestUser(authenticated=True)
-        self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.show_to_user_if_condition_is_true({
-            'render_for_user_when_condition_is_true': 'menuware.tests.test_menu.is_free_user'
-        }))
-
-    def test_show_to_user_conditionally_false(self):
-        self.request.user = TestUser(happy=False)
-        self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.show_to_user_if_condition_is_false({
-            'render_for_user_when_condition_is_false': 'menuware.tests.test_menu.is_user_happy'
-        }))
-
-        self.request.user = TestUser(authenticated=True, happy=False)
-        self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.show_to_user_if_condition_is_false({
-            'render_for_user_when_condition_is_false': 'menuware.tests.test_menu.is_user_happy'
-        }))
-
-        self.request.user = TestUser(happy=False)
-        self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.show_to_user_if_condition_is_false({
-            'render_for_user_when_condition_is_false': 'menuware.tests.test_menu.is_user_happy'
-        }))
-
-        self.request.user = TestUser()
-        self.menu.save_user_state(self.request)
-        self.assertTrue(self.menu.show_to_user_if_condition_is_false({
-            'render_for_user_when_condition_is_false': 'menuware.tests.test_menu.is_main_site'
-        }))
-
-        self.request.user = TestUser(authenticated=True)
-        self.menu.save_user_state(self.request)
-        self.assertFalse(self.menu.show_to_user_if_condition_is_false({
-            'render_for_user_when_condition_is_false': 'menuware.tests.test_menu.is_free_user'
-        }))
+        ctx = {
+            'request': self.request
+        }
+        nav = get_menu(ctx, 'NAV_MENU')
+        self.assertEqual(len(nav), 2)
 
     def test_has_name(self):
         self.assertFalse(self.menu.has_name({}))
@@ -277,57 +81,160 @@ class MenuTestCase(TestCase):
         self.assertTrue(self.menu.get_url({'url': '/foo/bar'}))
         self.assertTrue(self.menu.get_url({'url': 'named_url'}))
 
+    def test_state_anonymous_user(self):
+        self.request.user = TestUser()
+        self.menu.save_user_state(self.request)
+        self.assertFalse(self.menu.request.user.is_authenticated)
+
+    def test_state_reqular_user(self):
+        self.request.user = TestUser(authenticated=True)
+        self.menu.save_user_state(self.request)
+        self.assertTrue(self.menu.request.user.is_authenticated)
+        self.assertFalse(self.menu.request.user.is_staff)
+        self.assertFalse(self.menu.request.user.is_superuser)
+
+    def test_state_staff(self):
+        self.request.user = TestUser(authenticated=True, staff=True)
+        self.menu.save_user_state(self.request)
+        self.assertTrue(self.menu.request.user.is_staff)
+
+    def test_state_superuser(self):
+        self.request.user = TestUser(authenticated=True, superuser=True)
+        self.menu.save_user_state(self.request)
+        self.assertTrue(self.menu.request.user.is_superuser)
+
+    def test_menu_is_validated_for_non_list_or_dict_validators(self):
+        menu_dict = {
+            "validators": "menuware.tests.test_menu.is_main_site",
+        }
+        try:
+            self.assertFalse(self.menu.is_validated(menu_dict))
+        except ImproperlyConfigured:
+            pass
+        else:
+            self.fail("Didn't raise ImproperlyConfigured") # pragma: no cover
+
+    def test_menu_is_validated_for_dict_validators(self):
+        menu_dict = {
+            "validators": ("menuware.tests.test_menu.is_main_site", ),
+        }
+        self.assertTrue(self.menu.is_validated(menu_dict))
+
+    def test_menu_is_validated_dotted_notiation(self):
+        menu_dict = {
+            "validators": ["menuware.tests.test_menu.is_main_site"],
+        }
+        self.assertTrue(self.menu.is_validated(menu_dict))
+
+    def test_menu_is_validated_invalid_dotted_notiation(self):
+        menu_dict = {
+            "validators": ["foobar.hello"],
+        }
+        try:
+            self.assertTrue(self.menu.is_validated(menu_dict))
+        except ImportError:
+            pass
+        else:
+            self.fail("Didn't raise ImportError") # pragma: no cover
+
+    def test_menu_is_validated_callables(self):
+        menu_dict = {
+            "validators": [is_main_site],
+        }
+        self.assertTrue(self.menu.is_validated(menu_dict))
+
+    def test_menu_is_validated_without_validators(self):
+        menu_dict = {
+            # no validators
+        }
+        self.assertTrue(self.menu.is_validated({}))
+
+    def test_menu_is_validated_for_authenticated_users(self):
+        menu_dict = {
+            "validators": ["menuware.utils.is_authenticated"],
+        }
+        self.request.user = TestUser(authenticated=True)
+        self.menu.save_user_state(self.request)
+        self.assertTrue(self.menu.is_validated(menu_dict))
+
+    def test_menu_is_validated_for_unauthenticated_users(self):
+        menu_dict = {
+            "validators": ["menuware.utils.is_anonymous"],
+        }
+        self.request.user = TestUser()
+        self.menu.save_user_state(self.request)
+        self.assertTrue(self.menu.is_validated(menu_dict))
+
+    def test_menu_is_validated_for_superusers(self):
+        menu_dict = {
+            "validators": ["menuware.utils.is_superuser"],
+        }
+        self.request.user = TestUser(authenticated=True, superuser=True)
+        self.menu.save_user_state(self.request)
+        self.assertTrue(self.menu.is_validated(menu_dict))
+
+    def test_menu_is_validated_for_staff(self):
+        menu_dict = {
+            "validators": ["menuware.utils.is_staff"],
+        }
+        self.request.user = TestUser(authenticated=True, staff=True)
+        self.menu.save_user_state(self.request)
+        self.assertTrue(self.menu.is_validated(menu_dict))
+
+    def test_menu_is_validated_for_non_user_specific_conditions(self):
+        menu_dict = {
+            "validators": ["menuware.tests.test_menu.is_main_site"],
+        }
+        self.request.user = TestUser()
+        self.menu.save_user_state(self.request)
+        self.assertTrue(self.menu.is_validated(menu_dict))
+
     def test_generate_menu_submenu_attribute_inheritance(self):
         self.request.user = TestUser(staff=True, authenticated=True, happy=True)
         self.menu.save_user_state(self.request)
         list_dict = [
-            {   # Menu item -- visible to authenticated staff only
-                "name": "parent",
+            {   # Menu item -- is_saff validator will be applied to the child node
+                "name": "parent1",
                 "url": "/user/account/",
-                "render_for_authenticated": True,
-                "render_for_staff": True,
+                "validators": ["menuware.utils.is_staff", ],
                 "submenu": [
                     {
-                        "name": "child",
+                        "name": "child1",
                         "url": '/user/account/profile/',
                     },
                 ],
             },
-            {   # Menu item -- visible to if condition true
-                "name": "parent",
-                "url": "/user/account/happy/",
-                "render_for_authenticated": True,
-                "render_for_user_when_condition_is_true": 'menuware.tests.test_menu.is_user_happy',
+            {   # Menu item -- is_saff validator will be applied to the child node
+                "name": "parent2",
+                "url": "/user/settings/",
+                "validators": ["menuware.utils.is_authenticated", ],
                 "submenu": [
                     {
-                        "name": "child",
-                        "url": '/user/account/profile/',
+                        "name": "child1",
+                        "url": '/user/settings/happy/',
+                        "validators": [
+                            "menuware.tests.test_menu.is_user_happy",
+                        ],
                     },
-                ],
-            },
-            {   # Menu item -- visible to if condition true
-                "name": "parent",
-                "url": "/user/account/main/",
-                "render_for_user_when_condition_is_true": 'menuware.tests.test_menu.is_main_site',
-                "submenu": [
                     {
-                        "name": "child",
-                        "url": '/user/account/profile/',
+                        "name": "child2",
+                        "url": '/user/settings/paid/',
+                        "validators": [
+                            is_paid_user,
+                        ],
                     },
                 ],
-            },
-            {   # Menu item -- visible to free-tier members
-                "name": "Upgrade user",
-                "url": "/upgrade/",
-                "render_for_authenticated": True,
-                "render_for_user_when_condition_is_false": 'menuware.tests.test_menu.is_free_user',
             },
         ]
         nav = self.menu.generate_menu(list_dict)
         self.assertEqual(len(nav), 2)
-        self.assertEqual(nav[0]['render_for_authenticated'],
-            nav[0]['submenu'][0]['render_for_authenticated'])
-        self.assertEqual(nav[0]['render_for_staff'],
-            nav[0]['submenu'][0]['render_for_staff'])
-        self.assertEqual(nav[1]['render_for_user_when_condition_is_true'],
-            nav[1]['submenu'][0]['render_for_user_when_condition_is_true'])
+
+        self.assertTrue('menuware.utils.is_staff' in nav[0]['validators'])
+        self.assertTrue('menuware.utils.is_staff' in nav[0]['submenu'][0]['validators'])
+
+        self.assertTrue('menuware.utils.is_authenticated' in nav[1]['validators'])
+        self.assertTrue('menuware.utils.is_authenticated' in nav[1]['submenu'][0]['validators'])
+        self.assertTrue('menuware.utils.is_authenticated' in nav[1]['submenu'][1]['validators'])
+
+        self.assertTrue('menuware.tests.test_menu.is_user_happy' in nav[1]['submenu'][0]['validators'])
+        self.assertTrue(is_paid_user in nav[1]['submenu'][1]['validators'])

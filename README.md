@@ -1,7 +1,7 @@
 Django Menuware
 ====================
 
-**A simple yet effective menu generator for any Django project**
+**A menu generating application for Django**
 
 [![status-image]][status-link]
 [![version-image]][version-link]
@@ -10,7 +10,7 @@ Django Menuware
 Overview
 ====================
 
-Build **simple navigation system** for Django projects/apps, while keeping it **DRY**.
+Generates **Simple Navigation** for Django projects/apps, while keeping it **DRY**.
 
 How to install
 ====================
@@ -25,129 +25,82 @@ How to install
         b. cd into django-menuware-* directory
         c. run python setup.py
 
-How to use (Simple)
+How to use
 ====================
-Once you have installed `django-menuware`, then add `menuware` to your INSTALLED_APPS.
+    1. Install `django-menuware` as per the above instructions.
+    2. Add `menuware` to your `INSTALLED_APPS`.
+    3. Add `{% load menuware %}` to templates that require it.
 
    ```python
-    # Add `MENUWARE_MENU` to your settings.py and set it up as per your requirements.
     ####################################################################################
-    # The following example should help you with the layout.
-    # Please note:
-    #   "url" can be hard-coded or `reversible`. (e.g. '/foo/bar/' vs. 'foo_url_view').
-    #   Minimally set one of `"render_for_unauthenticated" or "render_for_authenticated"`.
-    #   Sub-menu items inherit the `render` attributes of their parent menu item.
-    #   Menu items get a `selected` attribute indicating their `active` state.
-    #   It first looks inside MENUWARE_MENU to load the menu list, if not found, then it looks
-    #   at the settings directly. (e.g. {% get_menu "ACCOUNT_MENU" as account_menu %} )
+    Example: settings.py
     ####################################################################################
 
-    ACCOUNT_MENU = [
+    NAV_MENU_LEFT = [
         {
-            "name": "Profile",
-            "url": "/account/profile/",
-            "render_for_authenticated": True,
+            "name": "Home",
+            "url": "/",
         },
         {
-            "name": "Preferences",
-            "url": "/account/preferences/",
-            "render_for_authenticated": True,
+            "name": "About",
+            "url": "/about",
         },
-        {
-            "name": "Social Links",
-            "url": "/account/social/",
-            "render_for_authenticated": True,
-        }
     ]
 
-    MENUWARE_MENU = {
-        "RIGHT_NAV_MENU": [
-            {   # Show `Login` to `unauthenticated` users ONLY
-                "name": "Login",
-                "url": "/login/",
-                "render_for_unauthenticated": True,
-            },
-            {   # Show `Account` to `authenticated` users ONLY
-                "name": "Account",
-                "url": "/account/",
-                "render_for_authenticated": True,
-                "submenu": ACCOUNT_MENU,
-            },
-            {   # Show `Logout` to `authenticated` users ONLY
-                "name": "Logout",
-                "url": "/logout/",
-                "render_for_authenticated": True,
-            },
-        ],
-        "LEFT_NAV_MENU": [
-            {   # Show `Home` to all users
-                "name": "Home",
-                "url": "/",
-                "render_for_unauthenticated": True,
-                "render_for_authenticated": True,
-            },
-            {   # Show `Search` to all users
-                "name": "Search",
-                "url": "/search/",
-                "render_for_unauthenticated": True,
-                "render_for_authenticated": True,
-            },
-            {   # Show `Comment Admin` to `staff` users ONLY
-                "name": "Comment Admin",
-                "url": "/review/admin/",
-                "render_for_authenticated": True,
-                "render_for_staff": True,
-            },
-            {   # Show `Admin` to `superuser` ONLY
-                "name": "Admin",
-                "url": "admin:index", # Reversible
-                "render_for_authenticated": True,
-                "render_for_superuser": True,
-                "submenu": [  # Show submenu to those who could see the `parent` menu
-                    {
-                        "name": "Switch", # switch to user account (su)
-                        "url": "/account/profile/switch",
-                    },
-                ],
-            },
-        ],
-        "LEFT_FOOTER_MENU": [
-            {
-                "name": "Contact Us",
-                "url": "/contact/",
-                "render_for_unauthenticated": True,
-                "render_for_authenticated": True,
-            },
-        ],
-        "RIGHT_FOOTER_MENU": [
-            {
-                "name": "Terms and Conditions",
-                "url": "/terms-condition/",
-                "render_for_unauthenticated": True,
-                "render_for_authenticated": True,
-            },
-            {   # `portal.utils` will be imported and `is_not_main_site(request)` will be called (dotted notations only)
-                "name": "Blog",
-                "url": "/blog",
-                "render_for_unauthenticated": True,
-                "render_for_user_when_condition_is_true": "portal.utils.is_not_main_site",
-            },
-            {   # `portal.utils` will be imported and `is_user_is_paid_customer(request)` will be called (dotted notations only)
-                "name": "Blog",
-                "url": "/blog",
-                "render_for_authenticated": True, # login is required to check if user is a paid customer
-                "render_for_user_when_condition_is_true": "portal.utils.is_user_is_paid_customer",
-            },
-            {   # `portal.utils` will be imported and `is_user_is_paid_customer(request)` will be called (dotted notations only)
-                "name": "Upgrade",
-                "url": "/upgrade",
-                "render_for_authenticated": True, # if free-tier user, promote upgrade
-                "render_for_user_when_condition_is_false": "portal.utils.is_user_is_paid_customer",
-            },
-        ]
-    }
+    NAV_MENU_RIGHT = [
+        {
+            "name": "Login",
+            "url": "login_url_view",  # reversible
+            "validators": ["menuware.utils.is_anonymous"],
+        },
+        {
+            "name": "Register",
+            "url": "register_view_url",  # reversible
+            "validators": ["menuware.utils.is_anonymous"],
+        },
+        {
+            "name": "Account",
+            "url": "/acount",
+            "validators": ["menuware.utils.is_authenticated"],
+            "submenu": [
+                {
+                    "name": "Profile",
+                    "url": "/account/profile",
+                },
+                {
+                    "name": "Account Balance",
+                    "url": "/account/balance",
+                    "validators": ["myapp.profiles.is_paid_user"],
+                },
+                {
+                    "name": "Account Secrets",
+                    "url": "/account/secrets",
+                    "validators": ["menuware.utils.is_superuser"],
+                }
+            ],
+        },
+    ]
+
+    FOOTER_MENU_LEFT = [
+        {
+            "name": "Facebook",
+            "url": "facebook.com/foobar",
+        },
+        {
+            "name": "Contact US",
+            "url": "/contact",
+        },
+    ]
+
+    FOOTER_MENU_RIGHT = [
+        {
+            "name": "Address",
+            "url": "/address",
+        },
+    ]
    ```
-In your template, load the templatetags for building your menu.
+
+Then in your template, load the template tag to generate your menu.
 
    ```html
     <!-- base.html -->
@@ -158,7 +111,7 @@ In your template, load the templatetags for building your menu.
         <head><title>Django Menuware</title></head>
         <body>
             <!-- NAV BAR Start -->
-            {% get_menu "LEFT_NAV_MENU" as left_menu %}
+            {% get_menu "NAV_MENU_LEFT" as left_menu %}
             <div style="float:left;">
                 {% for item in left_menu %}
                     <li class="{% if item.selected %} active {% endif %}">
@@ -176,7 +129,7 @@ In your template, load the templatetags for building your menu.
                 {% endfor %}
             </div>
 
-            {% get_menu "RIGHT_NAV_MENU" as right_menu %}
+            {% get_menu "NAV_MENU_RIGHT" as right_menu %}
             <div style="float:right;">
                 {% for item in right_menu %}
                     <li class="{% if item.selected %} active {% endif %}">
@@ -196,137 +149,16 @@ In your template, load the templatetags for building your menu.
             <!-- NAV BAR End -->
 
             <!-- Footer Start -->
-            {% get_menu "LEFT_FOOTER_MENU" as left_footer_menu %}
+            {% get_menu "FOOTER_MENU_LEFT" as left_footer_menu %}
             <div style="float:left;">
                 <!-- loop through your left footer menus -->
             </div>
 
-            {% get_menu "RIGH_FOOTER_MENU" as right_footer_menu %}
+            {% get_menu "FOOTER_MENU_RIGHT" as right_footer_menu %}
             <div style="float:right;">
                 <!-- loop through your right footer menus -->
             </div>
             <!-- Footer End -->
-        </body>
-    </html>
-   ```
-
-How to use (Advanced)
-====================
-Let's add a left / right navigation to an application called `foobar`.
-
-
-    Install `django-menuware`.
-    Note: you don't need to add `menuware` to your INSTALLED_APPS in this example.
-
-    Directory structure:
-    ####################
-    foobar/__init__.py
-    ... other app related dirs / files
-    foobar/templatetags
-    foobar/templatetags/__init__.py
-    foobar/templatetags/foobar_menu.py
-    foobar/templates/partial_header_left_menu.html
-    foobar/templates/partial_header_right_menu.html
-    foobar/templates/header_menu.html
-
-   ```python
-    # in foobar/templatetags/foobar_menu.py
-    from django import template
-    from menuware.menu import generate_menu
-    register = template.Library()
-
-    # custom template tag to render the right navigation menu
-    @register.assignment_tag(takes_context=True)
-    def foobar_header_menu_right(context):
-        """
-        Returns a navigation menu for the top-right header
-        """
-        RIGHT_NAV_MENU = [
-            {   #  Show `Login` to `unauthenticated` users ONLY
-                "name": "Login",
-                "url": "/login/",
-                "render_for_unauthenticated": True,
-            },
-            {   #  Show `Logout` to `authenticated` users ONLY
-                "name": "Logout",
-                "url": "/logout/",
-                "render_for_authenticated": True,
-            },
-        ]
-        return generate_menu(context['request'], RIGHT_NAV_MENU)
-
-    # custom template tag to render the left navigation menu
-    @register.assignment_tag(takes_context=True)
-    def foobar_header_menu_left(context):
-        """
-        Returns a navigation menu for the top-left header
-        """
-        LEFT_NAV_MENU = [
-            {   # Show `Home` to all users
-                "name": "Home",
-                "url": "/",
-                "render_for_unauthenticated": True,
-                "render_for_authenticated": True,
-            },
-            {   # Show `Search` to all users
-                "name": "Search",
-                "url": "/search/",
-                "render_for_unauthenticated": True,
-                "render_for_authenticated": True,
-            },
-            {   # Show `Comment Admin` to `staff` users ONLY
-                "name": "Comment Admin",
-                "url": "/review/admin/",
-                "render_for_authenticated": True,
-                "render_for_staff": True,
-            },
-            {   # Show `Account Admin` to `superuser` ONLY
-                "name": "Account Admin",
-                "url": "/account/admin/",
-                "render_for_authenticated": True,
-                "render_for_superuser": True,
-            },
-        ]
-        return generate_menu(context['request'], LEFT_NAV_MENU)
-   ```
-
-   ```html
-    # foobar/templates/partial_header_right_menu.html
-    {% load foobar_menu %}
-    {% foobar_header_menu_right as menu %}
-
-    {% for item in menu %}
-        <li class="{% if item.selected %} active {% endif %}">
-            <a href="{{item.url}}">{{item.name}}</a>
-        </li>
-    {% endfor %}
-   ```
-
-   ```html
-    # foobar/templates/partial_header_left_menu.html
-    {% load foobar_menu %}
-    {% foobar_header_menu_left as menu %}
-
-    {% for item in menu %}
-        <li class="{% if item.selected %} active {% endif %}">
-            <a href="{{item.url}}">{{item.name}}</a>
-        </li>
-    {% endfor %}
-   ```
-
-   ```html
-    # foobar/templates/header_menu.html
-    <!DOCTYPE html>
-    <html>
-        <head><title>Django Menuware</title></head>
-        <body>
-            <div style="float:left;">
-                {% include "foobar/partial_header_left_menu.html" %}
-            </div>
-
-            <div style="float:right;">
-                {% include "foobar/partial_header_right_menu.html" %}
-            </div>
         </body>
     </html>
    ```
@@ -342,7 +174,7 @@ To run the tests against the current environment:
 License
 ====================
 
-Released under a ([BSD](LICENSE.md)) license.
+Released under a ([MIT](LICENSE)) license.
 
 
 Version

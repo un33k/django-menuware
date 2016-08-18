@@ -7,19 +7,23 @@ import sys
 
 name = 'django-menuware'
 package = 'menuware'
-description = "A simple yet effective menu generator for any Django project."
+description = "A menu generating application for Django."
 url = 'https://github.com/un33k/django-menuware'
 author = 'Val Neekman'
 author_email = 'info@neekware.com'
-license = 'BSD'
+license = 'MIT'
 install_requires = ['']
 classifiers = [
-    'Development Status :: 4 - Beta',
+    'Development Status :: 5 - Production/Stable',
     'Environment :: Web Environment',
     'Intended Audience :: Developers',
-    'License :: OSI Approved :: BSD License',
+    'License :: OSI Approved :: MIT License',
     'Operating System :: OS Independent',
     'Programming Language :: Python',
+    "Programming Language :: Python :: 2",
+    "Programming Language :: Python :: 2.7",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.4",
     'Topic :: Utilities'
 ]
 

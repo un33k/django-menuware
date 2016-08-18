@@ -1,3 +1,13 @@
+## 1.0.0
+
+Feature:
+
+  - Dropped support for Django < 1.8
+  - Dropped support for Python < 3.4
+  - Changed licensing from BSD to MIT
+  - Added `validators` feature
+    - Not backward compatible with versions < 1.0.0
+
 ## 0.1.10
 
 Feature:
