@@ -1,7 +1,7 @@
 Django Menuware
 ====================
 
-**A Django menu generating application**
+**A menu generating application for Django**
 
 [![status-image]][status-link]
 [![version-image]][version-link]
