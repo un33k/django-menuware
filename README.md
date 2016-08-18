@@ -62,6 +62,65 @@ Once you have installed `django-menuware`, then add `menuware` to your INSTALLED
         }
     ]
 
+self.menu_dict_example = [
+            {   # Menu item won't be displayed without a valid `name` attribute
+                "url": "/",
+            },
+            {   # Menu item wont' be displayed without a `name`
+                "name": "",
+                "url": "/",
+            },
+            {   # Menu item won't be displayed without a valid `url` attribute
+                "name": "No URL Malformed Entry",
+            },
+            {   # Menu item is visible to anyone, anytime and it doesn't have any conditions
+                "name": "Main",
+                "url": "/",
+                "submenu": [
+                    {
+                        "name": "submenu",
+                        "url": '/submenu/',
+                    },
+                ],
+            },
+            {   # Menu item is visible to unauthenticated users only
+                "name": "Login",
+                "url": "admin:login",
+                "validators": ["menuware.utils.is_anonymous", ],
+            },
+            {   # Menu item is visible to authenticated users only
+                "name": "Logout",
+                "url": "/user/logout/",
+                "validators": ["menuware.utils.is_authenticated", ],
+            },
+            {   # Menu item is visible to authenticated staff only
+                "name": "Limited Staff Account Access",
+                "url": "/user/account/",
+                "validators": ["menuware.utils.is_staff", ],
+                "submenu": [
+                    {
+                        "name": "Profile",
+                        "url": '/user/account/profile/',
+                    },
+                ],
+            },
+            {   # Menu item is visible to authenticated superusers only
+                "name": "Full Superuser Account Access",
+                "url": "/admin/",
+                "validators": ["menuware.utils.is_superuser", ],
+            },
+            {   # Menu item is visible to `happy` users only
+                "name": "Conditional Account Access - Happy users",
+                "url": "/admin/",
+                "validators": ["menuware.tests.test_menu.is_user_happy", ],
+            },
+            {   # Menu item is visible to `paid` users only
+                "name": "Upgrade user",
+                "url": "/upgrade/",
+                "validators": ["menuware.tests.test_menu.is_paid_user", ],
+            },
+        ]
+
     MENUWARE_MENU = {
         "RIGHT_NAV_MENU": [
             {   # Show `Login` to `unauthenticated` users ONLY

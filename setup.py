@@ -7,7 +7,7 @@ import sys
 
 name = 'django-menuware'
 package = 'menuware'
-description = "A simple yet effective menu generator for any Django project."
+description = "A Django menu generating application."
 url = 'https://github.com/un33k/django-menuware'
 author = 'Val Neekman'
 author_email = 'info@neekware.com'

@@ -99,7 +99,7 @@ class MenuBase(object):
         submenu = parent_dict.get('submenu', None)
         if submenu is not None:
             for child_dict in submenu:
-                child_dict['valiators'] = list(set(list(parent_dict.get('validators', [])) +
+                child_dict['validators'] = list(set(list(parent_dict.get('validators', [])) +
                     list(child_dict.get('validators', []))))
             submenu = self.generate_menu(submenu, depth)
             if not submenu:
