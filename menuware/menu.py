@@ -37,7 +37,7 @@ class MenuBase(object):
 
         for validate in validators:
             func = util.get_callable(validate)
-            if not func or not func(self.request):
+            if not func or not func(self.request): # pragma: no cover
                 return False
         return True
 
