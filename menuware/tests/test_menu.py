@@ -112,7 +112,7 @@ class MenuTestCase(TestCase):
         except ImproperlyConfigured:
             pass
         else:
-            self.fail("Didn't raise ImproperlyConfigured")
+            self.fail("Didn't raise ImproperlyConfigured") # pragma: no cover
 
     def test_menu_is_validated_for_dict_validators(self):
         menu_dict = {
@@ -135,7 +135,7 @@ class MenuTestCase(TestCase):
         except ImportError:
             pass
         else:
-            self.fail("Didn't raise ImportError")
+            self.fail("Didn't raise ImportError") # pragma: no cover
 
     def test_menu_is_validated_callables(self):
         menu_dict = {
