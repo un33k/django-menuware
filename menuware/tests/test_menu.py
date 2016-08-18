@@ -1,7 +1,9 @@
 from django.http import HttpRequest
 from django.test import TestCase
+
 from ..menu import MenuBase
 from ..menu import generate_menu
+from ..templatetags.menuware import get_menu
 
 
 def is_user_happy(request):
@@ -52,6 +54,14 @@ class MenuTestCase(TestCase):
         self.request = HttpRequest()
         self.request.path = '/'
         self.menu = MenuBase()
+
+    def test_tempalte_tag(self):
+        self.request.user = TestUser(authenticated=True)
+        ctx = {
+            'request': self.request
+        }
+        nav = get_menu(ctx, 'NAV_MENU')
+        self.assertEqual(len(nav), 2)
 
     def test_has_name(self):
         self.assertFalse(self.menu.has_name({}))
