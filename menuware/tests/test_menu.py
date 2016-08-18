@@ -1,5 +1,6 @@
 from django.http import HttpRequest
 from django.test import TestCase
+from django.core.exceptions import ImproperlyConfigured
 
 from ..menu import MenuBase
 from ..menu import generate_menu
@@ -102,11 +103,39 @@ class MenuTestCase(TestCase):
         self.menu.save_user_state(self.request)
         self.assertTrue(self.menu.request.user.is_superuser)
 
+    def test_menu_is_validated_for_non_list_or_dict_validators(self):
+        menu_dict = {
+            "validators": "menuware.tests.test_menu.is_main_site",
+        }
+        try:
+            self.assertFalse(self.menu.is_validated(menu_dict))
+        except ImproperlyConfigured:
+            pass
+        else:
+            self.fail("Didn't raise ImproperlyConfigured")
+
+    def test_menu_is_validated_for_dict_validators(self):
+        menu_dict = {
+            "validators": ("menuware.tests.test_menu.is_main_site", ),
+        }
+        self.assertTrue(self.menu.is_validated(menu_dict))
+
     def test_menu_is_validated_dotted_notiation(self):
         menu_dict = {
             "validators": ["menuware.tests.test_menu.is_main_site"],
         }
         self.assertTrue(self.menu.is_validated(menu_dict))
+
+    def test_menu_is_validated_invalid_dotted_notiation(self):
+        menu_dict = {
+            "validators": ["foobar.hello"],
+        }
+        try:
+            self.assertTrue(self.menu.is_validated(menu_dict))
+        except ImportError:
+            pass
+        else:
+            self.fail("Didn't raise ImportError")
 
     def test_menu_is_validated_callables(self):
         menu_dict = {

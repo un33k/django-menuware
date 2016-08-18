@@ -6,5 +6,5 @@
 #  -- E128 continuation line under-indented for visual indent
 #  -- E225 missing whitespace around operator
 #  -- E501 line too long
-
-pep8 --exclude=migrations --ignore=E128,E225,E501 .
+#  -- E261 at least two spaces before inline comment
+pep8 --exclude=migrations --ignore=E128,E225,E261,E501 .
