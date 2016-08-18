@@ -12,7 +12,7 @@ Django Menuware
 Overview
 ====================
 
-Build **Simple Navigation** for Django projects/apps, while keeping it **DRY**.
+Generates **Simple Navigation** for Django projects/apps, while keeping it **DRY**.
 
 How to install
 ====================
@@ -29,9 +29,9 @@ How to install
 
 How to use
 ====================
-    1. Install `django-menuware` as per the instruction above
-    2. Add `menuware` to your `INSTALLED_APPS`
-    3. Add `{% load menuware %}` in templates that require it.
+    1. Install `django-menuware` as per the above instructions.
+    2. Add `menuware` to your `INSTALLED_APPS`.
+    3. Add `{% load menuware %}` to templates that require it.
 
    ```python
     ####################################################################################
@@ -52,12 +52,12 @@ How to use
     NAV_MENU_RIGHT = [
         {
             "name": "Login",
-            "url": "login_url_view",  # reversable
+            "url": "login_url_view",  # reversible
             "validators": ["menuware.utils.is_anonymous"],
         },
         {
             "name": "Register",
-            "url": "register_view_url",  # reversable
+            "url": "register_view_url",  # reversible
             "validators": ["menuware.utils.is_anonymous"],
         },
         {
@@ -102,7 +102,7 @@ How to use
     ]
    ```
 
-Then in your template, load the templatetags for building your menu.
+Then in your template, load the template tag to generate your menu.
 
    ```html
     <!-- base.html -->
